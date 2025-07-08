@@ -1,12 +1,14 @@
 import { 
   users, coaches, students, sports, batches, payments, attendance, activities, communications, settings, icons, paymentGateways,
-  campaigns, campaignMessages, messageTemplates,
+  campaigns, campaignMessages, messageTemplates, badges, studentBadges, studentPoints, achievementHistory,
   type User, type InsertUser, type Coach, type InsertCoach, type Student, type InsertStudent, type Sport, type InsertSport,
   type Batch, type InsertBatch, type Payment, type InsertPayment, type Attendance, type InsertAttendance,
   type Activity, type InsertActivity, type Communication, type InsertCommunication,
   type Setting, type InsertSetting, type Icon, type InsertIcon, type PaymentGateway, type InsertPaymentGateway,
   type Campaign, type InsertCampaign, type CampaignMessage, type InsertCampaignMessage,
-  type MessageTemplate, type InsertMessageTemplate
+  type MessageTemplate, type InsertMessageTemplate, type Badge, type InsertBadge,
+  type StudentBadge, type InsertStudentBadge, type StudentPoints, type InsertStudentPoints,
+  type AchievementHistory, type InsertAchievementHistory
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, gte, lte, count, sum, avg, like, sql } from "drizzle-orm";
@@ -173,6 +175,32 @@ export interface IStorage {
   createMessageTemplate(template: InsertMessageTemplate): Promise<MessageTemplate>;
   updateMessageTemplate(id: number, updates: Partial<InsertMessageTemplate>): Promise<MessageTemplate | undefined>;
   deleteMessageTemplate(id: number): Promise<boolean>;
+
+  // Badge operations
+  getBadges(): Promise<Badge[]>;
+  getBadge(id: number): Promise<Badge | undefined>;
+  getBadgeByName(name: string): Promise<Badge | undefined>;
+  createBadge(badge: InsertBadge): Promise<Badge>;
+  updateBadge(id: number, updates: Partial<InsertBadge>): Promise<Badge | undefined>;
+  deleteBadge(id: number): Promise<boolean>;
+
+  // Student badge operations
+  getStudentBadges(studentId: number): Promise<StudentBadge[]>;
+  createStudentBadge(studentBadge: InsertStudentBadge): Promise<StudentBadge>;
+  updateStudentBadge(id: number, updates: Partial<InsertStudentBadge>): Promise<StudentBadge | undefined>;
+
+  // Student points operations
+  getStudentPoints(studentId: number): Promise<StudentPoints | undefined>;
+  createStudentPoints(studentPoints: InsertStudentPoints): Promise<StudentPoints>;
+  addStudentPoints(studentId: number, points: number): Promise<void>;
+  updateStudentLevel(studentId: number, level: number): Promise<void>;
+  getStudentAttendanceCount(studentId: number): Promise<number>;
+  getStudentPayments(studentId: number): Promise<Payment[]>;
+  getStudentPerformanceHistory(studentId: number): Promise<any[]>;
+
+  // Achievement history operations
+  createAchievementHistory(achievement: InsertAchievementHistory): Promise<AchievementHistory>;
+  getAchievementHistory(studentId: number): Promise<AchievementHistory[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1075,6 +1103,142 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSavedQuery(id: number): Promise<void> {
     await db.delete(savedQueries).where(eq(savedQueries.id, id));
+  }
+
+  // Badge operations
+  async getBadges(): Promise<Badge[]> {
+    return await db.select().from(badges).orderBy(asc(badges.name));
+  }
+
+  async getBadge(id: number): Promise<Badge | undefined> {
+    const [badge] = await db.select().from(badges).where(eq(badges.id, id));
+    return badge;
+  }
+
+  async getBadgeByName(name: string): Promise<Badge | undefined> {
+    const [badge] = await db.select().from(badges).where(eq(badges.name, name));
+    return badge;
+  }
+
+  async createBadge(badgeData: InsertBadge): Promise<Badge> {
+    const [badge] = await db.insert(badges).values(badgeData).returning();
+    return badge;
+  }
+
+  async updateBadge(id: number, updates: Partial<InsertBadge>): Promise<Badge | undefined> {
+    const [badge] = await db
+      .update(badges)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(badges.id, id))
+      .returning();
+    return badge;
+  }
+
+  async deleteBadge(id: number): Promise<boolean> {
+    const result = await db.delete(badges).where(eq(badges.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Student badge operations
+  async getStudentBadges(studentId: number): Promise<StudentBadge[]> {
+    return await db.select().from(studentBadges).where(eq(studentBadges.studentId, studentId));
+  }
+
+  async createStudentBadge(studentBadgeData: InsertStudentBadge): Promise<StudentBadge> {
+    const [studentBadge] = await db.insert(studentBadges).values(studentBadgeData).returning();
+    return studentBadge;
+  }
+
+  async updateStudentBadge(id: number, updates: Partial<InsertStudentBadge>): Promise<StudentBadge | undefined> {
+    const [studentBadge] = await db
+      .update(studentBadges)
+      .set(updates)
+      .where(eq(studentBadges.id, id))
+      .returning();
+    return studentBadge;
+  }
+
+  // Student points operations
+  async getStudentPoints(studentId: number): Promise<StudentPoints | undefined> {
+    const [points] = await db.select().from(studentPoints).where(eq(studentPoints.studentId, studentId));
+    return points;
+  }
+
+  async createStudentPoints(studentPointsData: InsertStudentPoints): Promise<StudentPoints> {
+    const [points] = await db.insert(studentPoints).values(studentPointsData).returning();
+    return points;
+  }
+
+  async addStudentPoints(studentId: number, points: number): Promise<void> {
+    // Check if student points record exists
+    const existingPoints = await this.getStudentPoints(studentId);
+    
+    if (existingPoints) {
+      // Update existing points
+      await db
+        .update(studentPoints)
+        .set({
+          totalPoints: existingPoints.totalPoints + points,
+          experiencePoints: existingPoints.experiencePoints + points,
+          lastUpdated: new Date()
+        })
+        .where(eq(studentPoints.studentId, studentId));
+    } else {
+      // Create new points record
+      await this.createStudentPoints({
+        studentId,
+        totalPoints: points,
+        experiencePoints: points,
+        monthlyPoints: points,
+        level: 1
+      });
+    }
+  }
+
+  async updateStudentLevel(studentId: number, level: number): Promise<void> {
+    await db
+      .update(studentPoints)
+      .set({ level, lastUpdated: new Date() })
+      .where(eq(studentPoints.studentId, studentId));
+  }
+
+  async getStudentAttendanceCount(studentId: number): Promise<number> {
+    const [result] = await db
+      .select({ count: count() })
+      .from(attendance)
+      .where(and(
+        eq(attendance.studentId, studentId),
+        eq(attendance.status, 'present')
+      ));
+    return result.count || 0;
+  }
+
+  async getStudentPayments(studentId: number): Promise<Payment[]> {
+    return await db
+      .select()
+      .from(payments)
+      .where(eq(payments.studentId, studentId))
+      .orderBy(desc(payments.dueDate));
+  }
+
+  async getStudentPerformanceHistory(studentId: number): Promise<any[]> {
+    // This would need to be implemented based on actual performance tracking
+    // For now, return empty array as placeholder
+    return [];
+  }
+
+  // Achievement history operations
+  async createAchievementHistory(achievementData: InsertAchievementHistory): Promise<AchievementHistory> {
+    const [achievement] = await db.insert(achievementHistory).values(achievementData).returning();
+    return achievement;
+  }
+
+  async getAchievementHistory(studentId: number): Promise<AchievementHistory[]> {
+    return await db
+      .select()
+      .from(achievementHistory)
+      .where(eq(achievementHistory.studentId, studentId))
+      .orderBy(desc(achievementHistory.createdAt));
   }
 }
 

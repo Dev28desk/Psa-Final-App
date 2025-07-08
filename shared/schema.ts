@@ -561,3 +561,85 @@ export type UserRole = typeof userRoles.$inferSelect;
 export type InsertUserRole = typeof userRoles.$inferInsert;
 export type Permission = typeof permissions.$inferSelect;
 export type InsertPermission = typeof permissions.$inferInsert;
+
+// Student Achievement Badges System
+export const badges = pgTable("badges", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  icon: text("icon").notNull(),
+  color: text("color").notNull(),
+  category: text("category").notNull(), // attendance, payment, performance, milestones
+  criteria: jsonb("criteria").notNull(), // JSON object with achievement criteria
+  points: integer("points").notNull().default(0),
+  rarity: text("rarity").notNull().default("common"), // common, rare, epic, legendary
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const studentBadges = pgTable("student_badges", {
+  id: serial("id").primaryKey(),
+  studentId: integer("student_id").references(() => students.id),
+  badgeId: integer("badge_id").references(() => badges.id),
+  earnedAt: timestamp("earned_at").defaultNow(),
+  progress: jsonb("progress"), // JSON object tracking progress toward badge
+  isDisplayed: boolean("is_displayed").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const studentPoints = pgTable("student_points", {
+  id: serial("id").primaryKey(),
+  studentId: integer("student_id").references(() => students.id),
+  totalPoints: integer("total_points").notNull().default(0),
+  monthlyPoints: integer("monthly_points").notNull().default(0),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+  level: integer("level").notNull().default(1),
+  experiencePoints: integer("experience_points").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const achievementHistory = pgTable("achievement_history", {
+  id: serial("id").primaryKey(),
+  studentId: integer("student_id").references(() => students.id),
+  action: text("action").notNull(), // badge_earned, points_awarded, level_up
+  description: text("description").notNull(),
+  points: integer("points").notNull().default(0),
+  metadata: jsonb("metadata"), // Additional data about the achievement
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Badge schemas
+export const insertBadgeSchema = createInsertSchema(badges).omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true 
+});
+export const selectBadgeSchema = createSelectSchema(badges);
+export const insertStudentBadgeSchema = createInsertSchema(studentBadges).omit({ 
+  id: true, 
+  createdAt: true 
+});
+export const selectStudentBadgeSchema = createSelectSchema(studentBadges);
+export const insertStudentPointsSchema = createInsertSchema(studentPoints).omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true 
+});
+export const selectStudentPointsSchema = createSelectSchema(studentPoints);
+export const insertAchievementHistorySchema = createInsertSchema(achievementHistory).omit({ 
+  id: true, 
+  createdAt: true 
+});
+export const selectAchievementHistorySchema = createSelectSchema(achievementHistory);
+
+// Badge types
+export type Badge = typeof badges.$inferSelect;
+export type InsertBadge = typeof badges.$inferInsert;
+export type StudentBadge = typeof studentBadges.$inferSelect;
+export type InsertStudentBadge = typeof studentBadges.$inferInsert;
+export type StudentPoints = typeof studentPoints.$inferSelect;
+export type InsertStudentPoints = typeof studentPoints.$inferInsert;
+export type AchievementHistory = typeof achievementHistory.$inferSelect;
+export type InsertAchievementHistory = typeof achievementHistory.$inferInsert;

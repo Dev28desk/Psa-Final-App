@@ -67,15 +67,20 @@ app.use((req, res, next) => {
   }, () => {
     log(`serving on port ${port}`);
     
-    // Initialize campaign automation
+    // Initialize campaign automation and gamification
     setTimeout(async () => {
       try {
         const { CampaignAutomation } = await import("./campaign-automation");
         const automation = CampaignAutomation.getInstance();
         await automation.initializeAutomation();
         log("Campaign automation initialized successfully");
+        
+        // Initialize gamification system
+        const { gamificationService } = await import("./gamification");
+        await gamificationService.initializeDefaultBadges();
+        log("Gamification system initialized successfully");
       } catch (error) {
-        console.error("Failed to initialize campaign automation:", error);
+        console.error("Failed to initialize automation systems:", error);
       }
     }, 5000); // Wait 5 seconds for server to fully start
   });

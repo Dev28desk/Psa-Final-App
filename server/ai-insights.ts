@@ -46,7 +46,11 @@ export async function generateStudentInsights() {
       contents: prompt,
     });
 
-    return JSON.parse(response.text || "{}");
+    // Clean up the response to remove markdown formatting
+    let cleanedResponse = response.text || "{}";
+    cleanedResponse = cleanedResponse.replace(/```json\s*/, '').replace(/```\s*$/, '');
+    
+    return JSON.parse(cleanedResponse);
   } catch (error) {
     console.error("AI Insights Error:", error);
     throw new Error("Failed to generate AI insights");
@@ -83,7 +87,11 @@ export async function generateRevenueAnalysis() {
       contents: prompt,
     });
 
-    return JSON.parse(response.text || "{}");
+    // Clean up the response to remove markdown formatting
+    let cleanedResponse = response.text || "{}";
+    cleanedResponse = cleanedResponse.replace(/```json\s*/, '').replace(/```\s*$/, '');
+    
+    return JSON.parse(cleanedResponse);
   } catch (error) {
     console.error("Revenue Analysis Error:", error);
     throw new Error("Failed to generate revenue analysis");
@@ -120,7 +128,11 @@ export async function generateAttendanceInsights() {
       contents: prompt,
     });
 
-    return JSON.parse(response.text || "{}");
+    // Clean up the response to remove markdown formatting
+    let cleanedResponse = response.text || "{}";
+    cleanedResponse = cleanedResponse.replace(/```json\s*/, '').replace(/```\s*$/, '');
+    
+    return JSON.parse(cleanedResponse);
   } catch (error) {
     console.error("Attendance Analysis Error:", error);
     throw new Error("Failed to generate attendance insights");
@@ -129,10 +141,14 @@ export async function generateAttendanceInsights() {
 
 export async function generateRetentionForecast() {
   try {
-    const students = await storage.getStudents();
-    const payments = await storage.getPayments();
+    const studentsData = await storage.getStudents();
+    const paymentsData = await storage.getPayments();
     const attendance = await storage.getAttendanceStats();
     const dashboardStats = await storage.getDashboardStats();
+
+    // Ensure data is in array format
+    const students = Array.isArray(studentsData) ? studentsData : studentsData?.students || [];
+    const payments = Array.isArray(paymentsData) ? paymentsData : paymentsData?.payments || [];
 
     // Calculate retention metrics
     const retentionMetrics = calculateRetentionMetrics(students, payments, attendance);

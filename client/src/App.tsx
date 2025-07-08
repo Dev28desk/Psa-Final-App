@@ -19,6 +19,7 @@ import Communications from "@/pages/communications";
 import Campaigns from "@/pages/campaigns";
 import UserManagement from "@/pages/user-management";
 import GPSTracking from "@/pages/gps-tracking";
+import StudentBadges from "@/pages/student-badges";
 import NotFound from "@/pages/not-found";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
@@ -59,6 +60,7 @@ function Router() {
               <Route path="/campaigns" component={Campaigns} />
               <Route path="/user-management" component={UserManagement} />
               <Route path="/gps-tracking" component={GPSTracking} />
+              <Route path="/student-badges" component={StudentBadges} />
               <Route component={NotFound} />
             </Switch>
           </div>

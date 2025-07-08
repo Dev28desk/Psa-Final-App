@@ -8,6 +8,7 @@ import { generateStudentInsights, generateRevenueAnalysis, generateAttendanceIns
 import { sendWhatsAppNotification } from "./notifications";
 import { locationTrackingService } from "./location-tracking";
 import { userPermissionService } from "./user-permission";
+import { gamificationService } from "./gamification";
 import { insertStudentSchema, insertPaymentSchema, insertAttendanceSchema, insertCoachSchema, insertSportSchema, insertBatchSchema, insertCommunicationSchema, insertCampaignSchema, insertCampaignMessageSchema, insertMessageTemplateSchema, insertCustomReportSchema, insertReportExecutionSchema, insertSavedQuerySchema, insertLocationTrackingSchema, insertGeofenceSchema, insertCoachAttendanceSchema } from "@shared/schema";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
@@ -229,6 +230,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         entityType: 'payment'
       });
 
+      // Trigger gamification event for payment
+      await gamificationService.triggerPaymentEvent(payment.studentId, payment);
+
       // Broadcast update
       broadcast({
         type: 'payment_received',
@@ -239,6 +243,127 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating payment:", error);
       res.status(400).json({ message: "Failed to create payment" });
+    }
+  });
+
+  // Badge endpoints
+  app.get('/api/badges', async (req, res) => {
+    try {
+      const badges = await storage.getBadges();
+      res.json(badges);
+    } catch (error) {
+      console.error('Error fetching badges:', error);
+      res.status(500).json({ error: 'Failed to fetch badges' });
+    }
+  });
+
+  app.get('/api/badges/:id', async (req, res) => {
+    try {
+      const badge = await storage.getBadge(parseInt(req.params.id));
+      if (!badge) {
+        return res.status(404).json({ error: 'Badge not found' });
+      }
+      res.json(badge);
+    } catch (error) {
+      console.error('Error fetching badge:', error);
+      res.status(500).json({ error: 'Failed to fetch badge' });
+    }
+  });
+
+  app.post('/api/badges', async (req, res) => {
+    try {
+      const badge = await storage.createBadge(req.body);
+      res.json(badge);
+    } catch (error) {
+      console.error('Error creating badge:', error);
+      res.status(500).json({ error: 'Failed to create badge' });
+    }
+  });
+
+  app.patch('/api/badges/:id', async (req, res) => {
+    try {
+      const badge = await storage.updateBadge(parseInt(req.params.id), req.body);
+      if (!badge) {
+        return res.status(404).json({ error: 'Badge not found' });
+      }
+      res.json(badge);
+    } catch (error) {
+      console.error('Error updating badge:', error);
+      res.status(500).json({ error: 'Failed to update badge' });
+    }
+  });
+
+  app.delete('/api/badges/:id', async (req, res) => {
+    try {
+      const deleted = await storage.deleteBadge(parseInt(req.params.id));
+      if (!deleted) {
+        return res.status(404).json({ error: 'Badge not found' });
+      }
+      res.json({ message: 'Badge deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting badge:', error);
+      res.status(500).json({ error: 'Failed to delete badge' });
+    }
+  });
+
+  // Student badge endpoints
+  app.get('/api/students/:id/badges', async (req, res) => {
+    try {
+      const studentBadges = await storage.getStudentBadges(parseInt(req.params.id));
+      res.json(studentBadges);
+    } catch (error) {
+      console.error('Error fetching student badges:', error);
+      res.status(500).json({ error: 'Failed to fetch student badges' });
+    }
+  });
+
+  app.post('/api/students/:id/award-badge', async (req, res) => {
+    try {
+      const { badgeId } = req.body;
+      const studentBadge = await storage.createStudentBadge({
+        studentId: parseInt(req.params.id),
+        badgeId: badgeId,
+        earnedAt: new Date(),
+        progress: {},
+        isDisplayed: true
+      });
+      res.json(studentBadge);
+    } catch (error) {
+      console.error('Error awarding badge:', error);
+      res.status(500).json({ error: 'Failed to award badge' });
+    }
+  });
+
+  // Student points endpoints
+  app.get('/api/students/:id/points', async (req, res) => {
+    try {
+      const studentPoints = await storage.getStudentPoints(parseInt(req.params.id));
+      res.json(studentPoints);
+    } catch (error) {
+      console.error('Error fetching student points:', error);
+      res.status(500).json({ error: 'Failed to fetch student points' });
+    }
+  });
+
+  app.post('/api/students/:id/add-points', async (req, res) => {
+    try {
+      const { points } = req.body;
+      await storage.addStudentPoints(parseInt(req.params.id), points);
+      res.json({ message: 'Points added successfully' });
+    } catch (error) {
+      console.error('Error adding points:', error);
+      res.status(500).json({ error: 'Failed to add points' });
+    }
+  });
+
+  // Achievement history endpoints
+  app.get('/api/students/:id/achievements', async (req, res) => {
+    try {
+      const achievements = await storage.getAchievementHistory(parseInt(req.params.id));
+      res.json(achievements);
+    } catch (error) {
+      console.error('Error fetching achievements:', error);
+      res.status(500).json({ error: 'Failed to fetch achievements' });
     }
   });
 
@@ -293,6 +418,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         entityId: attendance.id,
         entityType: 'attendance'
       });
+
+      // Trigger gamification event for attendance
+      await gamificationService.triggerAttendanceEvent(attendance.studentId, attendance);
 
       // Broadcast update
       broadcast({
@@ -697,6 +825,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(forecast);
     } catch (error: any) {
       console.error("Retention forecast error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Badges API endpoints
+  app.get("/api/badges", async (req, res) => {
+    try {
+      const badges = await storage.getBadges();
+      res.json(badges);
+    } catch (error: any) {
+      console.error("Error fetching badges:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/badges", async (req, res) => {
+    try {
+      const badge = await storage.createBadge(req.body);
+      res.json(badge);
+    } catch (error: any) {
+      console.error("Error creating badge:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/students/:id/badges", async (req, res) => {
+    try {
+      const studentId = parseInt(req.params.id);
+      const badges = await storage.getStudentBadges(studentId);
+      res.json(badges);
+    } catch (error: any) {
+      console.error("Error fetching student badges:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/students/:id/points", async (req, res) => {
+    try {
+      const studentId = parseInt(req.params.id);
+      const points = await storage.getStudentPoints(studentId);
+      res.json(points);
+    } catch (error: any) {
+      console.error("Error fetching student points:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/students/:id/achievements", async (req, res) => {
+    try {
+      const studentId = parseInt(req.params.id);
+      const achievements = await storage.getAchievementHistory(studentId);
+      res.json(achievements);
+    } catch (error: any) {
+      console.error("Error fetching achievement history:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/students/:id/award-badge", async (req, res) => {
+    try {
+      const studentId = parseInt(req.params.id);
+      const { badgeId } = req.body;
+      
+      const studentBadge = await storage.createStudentBadge({
+        studentId,
+        badgeId,
+        earnedAt: new Date(),
+        progress: {},
+        isDisplayed: true
+      });
+      
+      res.json(studentBadge);
+    } catch (error: any) {
+      console.error("Error awarding badge:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/students/:id/add-points", async (req, res) => {
+    try {
+      const studentId = parseInt(req.params.id);
+      const { points } = req.body;
+      
+      await storage.addStudentPoints(studentId, points);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error adding points:", error);
       res.status(500).json({ error: error.message });
     }
   });
