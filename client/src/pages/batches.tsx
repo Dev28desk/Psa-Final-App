@@ -23,6 +23,26 @@ const batchFormSchema = insertBatchSchema.extend({
   }),
 });
 
+const TIME_SLOTS = [
+  "5:00 AM - 6:00 AM",
+  "6:00 AM - 7:00 AM",
+  "7:00 AM - 8:00 AM",
+  "8:00 AM - 9:00 AM",
+  "9:00 AM - 10:00 AM",
+  "10:00 AM - 11:00 AM",
+  "11:00 AM - 12:00 PM",
+  "12:00 PM - 1:00 PM",
+  "1:00 PM - 2:00 PM",
+  "2:00 PM - 3:00 PM",
+  "3:00 PM - 4:00 PM",
+  "4:00 PM - 5:00 PM",
+  "5:00 PM - 6:00 PM",
+  "6:00 PM - 7:00 PM",
+  "7:00 PM - 8:00 PM",
+  "8:00 PM - 9:00 PM",
+  "9:00 PM - 10:00 PM",
+];
+
 type BatchFormData = z.infer<typeof batchFormSchema>;
 
 export default function BatchesPage() {
@@ -292,11 +312,21 @@ export default function BatchesPage() {
                 </div>
                 <div>
                   <Label htmlFor="time">Training Time</Label>
-                  <Input
-                    id="time"
-                    {...form.register('schedule.time')}
-                    placeholder="e.g., 6:00 AM - 7:30 AM"
-                  />
+                  <Select
+                    value={form.watch('schedule.time')}
+                    onValueChange={(value) => form.setValue('schedule.time', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select training time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TIME_SLOTS.map((slot) => (
+                        <SelectItem key={slot} value={slot}>
+                          {slot}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div>
