@@ -2,8 +2,16 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertStudentSchema, insertPaymentSchema, insertAttendanceSchema } from "@shared/schema";
+import { reportGenerator } from "./report-generator";
+import { CampaignAutomation } from "./campaign-automation";
+import { generateStudentInsights, generateRevenueAnalysis, generateAttendanceInsights } from "./ai-insights";
+import { sendWhatsAppNotification } from "./notifications";
+import { locationTrackingService } from "./location-tracking";
+import { userPermissionService } from "./user-permission";
+import { insertStudentSchema, insertPaymentSchema, insertAttendanceSchema, insertCoachSchema, insertSportSchema, insertBatchSchema, insertCommunicationSchema, insertCampaignSchema, insertCampaignMessageSchema, insertMessageTemplateSchema, insertCustomReportSchema, insertReportExecutionSchema, insertSavedQuerySchema, insertLocationTrackingSchema, insertGeofenceSchema, insertCoachAttendanceSchema } from "@shared/schema";
 import { z } from "zod";
+import { fromZodError } from "zod-validation-error";
+import { campaignTemplates } from "./campaign-automation";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -1108,6 +1116,251 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to execute query" });
     }
   });
+
+  // GPS Location Tracking Routes
+  app.post("/api/location/track", async (req, res) => {
+    try {
+      const { userId, latitude, longitude, accuracy, trackingType } = req.body;
+      
+      const locationData = {
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude),
+        accuracy: parseInt(accuracy),
+        timestamp: new Date()
+      };
+      
+      const result = await locationTrackingService.trackLocation(userId, locationData, trackingType);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error tracking location:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/location/history/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { limit = 50 } = req.query;
+      
+      const history = await locationTrackingService.getUserLocationHistory(parseInt(userId), parseInt(limit as string));
+      res.json(history);
+    } catch (error: any) {
+      console.error("Error fetching location history:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/location/live", async (req, res) => {
+    try {
+      const liveLocations = await locationTrackingService.getLiveCoachLocations();
+      res.json(liveLocations);
+    } catch (error: any) {
+      console.error("Error fetching live locations:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Geofence Routes
+  app.post("/api/geofences", async (req, res) => {
+    try {
+      const { name, description, centerLatitude, centerLongitude, radius, createdBy } = req.body;
+      
+      const geofenceData = {
+        name,
+        description,
+        centerLatitude: parseFloat(centerLatitude),
+        centerLongitude: parseFloat(centerLongitude),
+        radius: parseInt(radius),
+        createdBy: parseInt(createdBy)
+      };
+      
+      const result = await locationTrackingService.createGeofence(geofenceData);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error creating geofence:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/geofences", async (req, res) => {
+    try {
+      const geofences = await locationTrackingService.getGeofences();
+      res.json(geofences);
+    } catch (error: any) {
+      console.error("Error fetching geofences:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Coach Attendance Routes
+  app.post("/api/coach/checkin", async (req, res) => {
+    try {
+      const { coachId, batchId, latitude, longitude, accuracy } = req.body;
+      
+      const locationData = {
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude),
+        accuracy: parseInt(accuracy),
+        timestamp: new Date()
+      };
+      
+      const result = await locationTrackingService.coachCheckIn(
+        parseInt(coachId),
+        parseInt(batchId),
+        locationData
+      );
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error in coach check-in:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/coach/checkout", async (req, res) => {
+    try {
+      const { coachId, batchId, latitude, longitude, accuracy } = req.body;
+      
+      const locationData = {
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude),
+        accuracy: parseInt(accuracy),
+        timestamp: new Date()
+      };
+      
+      const result = await locationTrackingService.coachCheckOut(
+        parseInt(coachId),
+        parseInt(batchId),
+        locationData
+      );
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error in coach check-out:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/coach/attendance/:coachId", async (req, res) => {
+    try {
+      const { coachId } = req.params;
+      const { limit = 30 } = req.query;
+      
+      const history = await locationTrackingService.getCoachAttendanceHistory(
+        parseInt(coachId),
+        parseInt(limit as string)
+      );
+      res.json(history);
+    } catch (error: any) {
+      console.error("Error fetching coach attendance:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // User Permission Routes
+  app.post("/api/users", async (req, res) => {
+    try {
+      const { name, email, phone, role, permissions, createdBy } = req.body;
+      
+      const userData = {
+        name,
+        email,
+        phone,
+        role,
+        permissions: permissions || [],
+        createdBy: parseInt(createdBy)
+      };
+      
+      const result = await userPermissionService.createUser(userData);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/users", async (req, res) => {
+    try {
+      const users = await userPermissionService.getUsers();
+      res.json(users);
+    } catch (error: any) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/users/:userId/permissions", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const permissions = await userPermissionService.getUserPermissions(parseInt(userId));
+      res.json(permissions);
+    } catch (error: any) {
+      console.error("Error fetching user permissions:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.put("/api/users/:userId/permissions", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { permissions } = req.body;
+      
+      const result = await userPermissionService.updateUserPermissions(
+        parseInt(userId),
+        permissions
+      );
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error updating user permissions:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.put("/api/users/:userId/role", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { role } = req.body;
+      
+      const result = await userPermissionService.updateUserRole(parseInt(userId), role);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error updating user role:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.put("/api/users/:userId/deactivate", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const result = await userPermissionService.deactivateUser(parseInt(userId));
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error deactivating user:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.put("/api/users/:userId/activate", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const result = await userPermissionService.activateUser(parseInt(userId));
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error activating user:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/permissions", async (req, res) => {
+    try {
+      const permissions = await userPermissionService.getPermissions();
+      res.json(permissions);
+    } catch (error: any) {
+      console.error("Error fetching permissions:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Initialize permissions on startup
+  await userPermissionService.initializeDefaultPermissions();
 
   return httpServer;
 }

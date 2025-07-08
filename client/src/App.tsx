@@ -17,6 +17,8 @@ import Coaches from "@/pages/coaches";
 import Batches from "@/pages/batches";
 import Communications from "@/pages/communications";
 import Campaigns from "@/pages/campaigns";
+import UserManagement from "@/pages/user-management";
+import GPSTracking from "@/pages/gps-tracking";
 import NotFound from "@/pages/not-found";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
@@ -55,6 +57,8 @@ function Router() {
               <Route path="/batches" component={Batches} />
               <Route path="/communications" component={Communications} />
               <Route path="/campaigns" component={Campaigns} />
+              <Route path="/user-management" component={UserManagement} />
+              <Route path="/gps-tracking" component={GPSTracking} />
               <Route component={NotFound} />
             </Switch>
           </div>

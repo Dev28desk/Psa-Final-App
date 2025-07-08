@@ -9,9 +9,12 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   email: text("email").unique(),
   phone: text("phone").notNull().unique(),
-  role: text("role").notNull().default("student"), // student, coach, admin, staff
+  role: text("role").notNull().default("student"), // student, coach, admin, staff, manager
   permissions: jsonb("permissions").default({}),
+  isActive: boolean("is_active").default(true),
+  lastLogin: timestamp("last_login"),
   profileImageUrl: text("profile_image_url"),
+  createdBy: integer("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -441,3 +444,120 @@ export type ReportExecution = typeof reportExecutions.$inferSelect;
 export type InsertReportExecution = typeof reportExecutions.$inferInsert;
 export type SavedQuery = typeof savedQueries.$inferSelect;
 export type InsertSavedQuery = typeof savedQueries.$inferInsert;
+
+// Location tracking table for GPS attendance
+export const locationTracking = pgTable("location_tracking", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  latitude: decimal("latitude", { precision: 10, scale: 8 }).notNull(),
+  longitude: decimal("longitude", { precision: 11, scale: 8 }).notNull(),
+  accuracy: integer("accuracy"), // GPS accuracy in meters
+  timestamp: timestamp("timestamp").defaultNow(),
+  isWithinGeofence: boolean("is_within_geofence").default(false),
+  geofenceId: integer("geofence_id").references(() => geofences.id),
+  trackingType: text("tracking_type").default("manual"), // manual, automatic, attendance
+  metadata: jsonb("metadata").default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Geofences for location-based attendance
+export const geofences = pgTable("geofences", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  centerLatitude: decimal("center_latitude", { precision: 10, scale: 8 }).notNull(),
+  centerLongitude: decimal("center_longitude", { precision: 11, scale: 8 }).notNull(),
+  radius: integer("radius").notNull(), // radius in meters
+  isActive: boolean("is_active").default(true),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Coach attendance with GPS verification
+export const coachAttendance = pgTable("coach_attendance", {
+  id: serial("id").primaryKey(),
+  coachId: integer("coach_id").references(() => coaches.id),
+  batchId: integer("batch_id").references(() => batches.id),
+  date: date("date").notNull(),
+  checkInTime: timestamp("check_in_time"),
+  checkOutTime: timestamp("check_out_time"),
+  checkInLocation: jsonb("check_in_location"), // {lat, lng, accuracy}
+  checkOutLocation: jsonb("check_out_location"),
+  isGpsVerified: boolean("is_gps_verified").default(false),
+  geofenceVerified: boolean("geofence_verified").default(false),
+  status: text("status").default("absent"), // present, absent, late, early_leave
+  notes: text("notes"),
+  verifiedBy: integer("verified_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// User roles and permissions
+export const userRoles = pgTable("user_roles", {
+  id: serial("id").primaryKey(),
+  name: text("name").unique().notNull(),
+  displayName: text("display_name").notNull(),
+  description: text("description"),
+  permissions: jsonb("permissions").default([]),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Permission definitions
+export const permissions = pgTable("permissions", {
+  id: serial("id").primaryKey(),
+  name: text("name").unique().notNull(),
+  displayName: text("display_name").notNull(),
+  description: text("description"),
+  category: text("category").notNull(), // users, students, payments, attendance, etc.
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Schemas for new tables
+export const insertLocationTrackingSchema = createInsertSchema(locationTracking).omit({ 
+  id: true, 
+  createdAt: true 
+});
+export const selectLocationTrackingSchema = createSelectSchema(locationTracking);
+
+export const insertGeofenceSchema = createInsertSchema(geofences).omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true 
+});
+export const selectGeofenceSchema = createSelectSchema(geofences);
+
+export const insertCoachAttendanceSchema = createInsertSchema(coachAttendance).omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true 
+});
+export const selectCoachAttendanceSchema = createSelectSchema(coachAttendance);
+
+export const insertUserRoleSchema = createInsertSchema(userRoles).omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true 
+});
+export const selectUserRoleSchema = createSelectSchema(userRoles);
+
+export const insertPermissionSchema = createInsertSchema(permissions).omit({ 
+  id: true, 
+  createdAt: true 
+});
+export const selectPermissionSchema = createSelectSchema(permissions);
+
+// Export new types
+export type LocationTracking = typeof locationTracking.$inferSelect;
+export type InsertLocationTracking = typeof locationTracking.$inferInsert;
+export type Geofence = typeof geofences.$inferSelect;
+export type InsertGeofence = typeof geofences.$inferInsert;
+export type CoachAttendance = typeof coachAttendance.$inferSelect;
+export type InsertCoachAttendance = typeof coachAttendance.$inferInsert;
+export type UserRole = typeof userRoles.$inferSelect;
+export type InsertUserRole = typeof userRoles.$inferInsert;
+export type Permission = typeof permissions.$inferSelect;
+export type InsertPermission = typeof permissions.$inferInsert;

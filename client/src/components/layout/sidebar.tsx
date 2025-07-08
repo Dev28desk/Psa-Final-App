@@ -17,7 +17,9 @@ import {
   BarChart3,
   Brain,
   Menu,
-  X
+  X,
+  Shield,
+  MapPin
 } from "lucide-react";
 
 interface SidebarProps {
@@ -49,6 +51,8 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileToggle }:
     { name: "Reports", href: "/reports", icon: BarChart3 },
     { name: "Advanced Reports", href: "/advanced-reports", icon: Brain },
     { name: "AI Insights", href: "/ai-insights", icon: BarChart3 },
+    { name: "Users", href: "/user-management", icon: Shield },
+    { name: "GPS Tracking", href: "/gps-tracking", icon: MapPin },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 
