@@ -45,7 +45,7 @@ export const batches = pgTable("batches", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   sportId: integer("sport_id").references(() => sports.id),
-  coachId: integer("coach_id").references(() => users.id),
+  coachId: integer("coach_id").references(() => coaches.id),
   schedule: jsonb("schedule").notNull(), // { days: ['monday', 'wednesday'], time: '6:00 AM - 7:30 AM' }
   maxCapacity: integer("max_capacity").notNull(),
   currentCapacity: integer("current_capacity").default(0),

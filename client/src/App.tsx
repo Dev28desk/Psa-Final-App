@@ -13,6 +13,7 @@ import Settings from "@/pages/settings";
 import Sports from "@/pages/sports";
 import Coaches from "@/pages/coaches";
 import Batches from "@/pages/batches";
+import Communications from "@/pages/communications";
 import NotFound from "@/pages/not-found";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
@@ -36,6 +37,7 @@ function Router() {
               <Route path="/sports" component={Sports} />
               <Route path="/coaches" component={Coaches} />
               <Route path="/batches" component={Batches} />
+              <Route path="/communications" component={Communications} />
               <Route component={NotFound} />
             </Switch>
           </div>
