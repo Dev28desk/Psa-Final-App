@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,11 +21,62 @@ const coachSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  specialization: z.string().min(2, "Specialization is required"),
+  specialization: z.string().min(1, "Please select a specialization"),
   experience: z.number().min(0, "Experience must be positive"),
-  qualifications: z.string().optional(),
+  qualifications: z.string().min(1, "Please select qualifications"),
   isActive: z.boolean().default(true),
 });
+
+const SPECIALIZATIONS = [
+  "Cricket",
+  "Football",
+  "Basketball",
+  "Tennis",
+  "Badminton",
+  "Swimming",
+  "Athletics",
+  "Volleyball",
+  "Table Tennis",
+  "Hockey",
+  "Kabaddi",
+  "Wrestling",
+  "Boxing",
+  "Martial Arts",
+  "Yoga",
+  "Other"
+];
+
+const EXPERIENCE_LEVELS = [
+  { value: 0, label: "Fresher" },
+  { value: 1, label: "1 Year" },
+  { value: 2, label: "2 Years" },
+  { value: 3, label: "3 Years" },
+  { value: 4, label: "4 Years" },
+  { value: 5, label: "5 Years" },
+  { value: 6, label: "6-10 Years" },
+  { value: 10, label: "10+ Years" },
+  { value: 15, label: "15+ Years" },
+  { value: 20, label: "20+ Years" }
+];
+
+const QUALIFICATIONS = [
+  "B.P.Ed (Bachelor of Physical Education)",
+  "M.P.Ed (Master of Physical Education)",
+  "Diploma in Sports Coaching",
+  "Certificate in Sports Training",
+  "NIS (National Institute of Sports) Certification",
+  "SAI (Sports Authority of India) Coaching Certificate",
+  "Level 1 Coaching Certificate",
+  "Level 2 Coaching Certificate",
+  "Level 3 Coaching Certificate",
+  "Former Professional Player",
+  "International Player",
+  "State Level Player",
+  "District Level Player",
+  "Fitness Trainer Certification",
+  "Yoga Instructor Certification",
+  "Other Professional Qualification"
+];
 
 type CoachFormData = z.infer<typeof coachSchema>;
 
@@ -226,9 +278,20 @@ export default function Coaches() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Specialization</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Cricket, Football" {...field} />
-                        </FormControl>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select specialization" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {SPECIALIZATIONS.map((spec) => (
+                              <SelectItem key={spec} value={spec}>
+                                {spec}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -240,14 +303,20 @@ export default function Coaches() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Experience (Years)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="Enter years of experience"
-                          {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
-                        />
-                      </FormControl>
+                      <Select onValueChange={(value) => field.onChange(Number(value))} value={field.value.toString()}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select experience level" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {EXPERIENCE_LEVELS.map((exp) => (
+                            <SelectItem key={exp.value} value={exp.value.toString()}>
+                              {exp.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -258,12 +327,20 @@ export default function Coaches() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Qualifications</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Enter qualifications and certifications"
-                          {...field}
-                        />
-                      </FormControl>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select qualifications" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {QUALIFICATIONS.map((qual) => (
+                            <SelectItem key={qual} value={qual}>
+                              {qual}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
