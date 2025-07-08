@@ -543,17 +543,34 @@ export default function SettingsPage() {
                       <h3 className="font-semibold">WhatsApp Business API</h3>
                       <p className="text-sm text-gray-500">For sending notifications and alerts</p>
                     </div>
-                    <Badge variant="outline">Inactive</Badge>
+                    <Badge variant={settings?.whatsapp_token ? "secondary" : "outline"}>
+                      {settings?.whatsapp_token ? "Active" : "Inactive"}
+                    </Badge>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="whatsapp-token">Access Token</Label>
-                    <Input 
-                      id="whatsapp-token" 
-                      type="password"
-                      placeholder="Enter WhatsApp Business API token"
-                      value={settings?.whatsapp_token || ''}
-                      onChange={(e) => handleSettingChange('whatsapp_token', e.target.value)}
-                    />
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="whatsapp-token">Access Token</Label>
+                      <Input 
+                        id="whatsapp-token" 
+                        type="password"
+                        placeholder="Enter WhatsApp Business API token (starts with EAA...)"
+                        value={settings?.whatsapp_token || ''}
+                        onChange={(e) => handleSettingChange('whatsapp_token', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="whatsapp-phone-id">Phone Number ID</Label>
+                      <Input 
+                        id="whatsapp-phone-id" 
+                        type="text"
+                        placeholder="Enter your WhatsApp Business phone number ID"
+                        value={settings?.whatsapp_phone_number_id || ''}
+                        onChange={(e) => handleSettingChange('whatsapp_phone_number_id', e.target.value)}
+                      />
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      <p>Need help setting up? <a href="/WHATSAPP_SETUP_GUIDE.md" target="_blank" className="text-blue-600 hover:underline">View Setup Guide</a></p>
+                    </div>
                   </div>
                 </div>
               </div>

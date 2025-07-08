@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import { PaymentForm } from "@/components/fees/payment-form";
 import { FeeStatus } from "@/components/fees/fee-status";
 import { PaymentRecorder } from "@/components/payments/payment-recorder";
 import { useRealtime } from "@/hooks/use-realtime";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Search, 
   Filter, 
@@ -29,8 +31,35 @@ export default function Fees() {
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const { toast } = useToast();
   
   useRealtime();
+
+  const handleSendReminder = async (payment: any) => {
+    try {
+      const response = await apiRequest('POST', '/api/notifications/fee-reminder', {
+        studentId: payment.studentId,
+        amount: payment.amount,
+        dueDate: payment.dueDate,
+        monthYear: payment.monthYear
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Reminder Sent",
+          description: `WhatsApp reminder sent to ${payment.student?.name}`,
+        });
+      } else {
+        throw new Error('Failed to send reminder');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send WhatsApp reminder. Please check your WhatsApp configuration.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const { data: paymentsData, isLoading } = useQuery({
     queryKey: ['/api/payments', { search: searchTerm, status: statusFilter !== 'all' ? statusFilter : undefined }],
@@ -336,7 +365,11 @@ export default function Fees() {
                                   </div>
                                   <div className="flex items-center space-x-3">
                                     <span className="font-semibold text-red-600">₹{payment.amount}</span>
-                                    <Button size="sm" variant="outline">
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      onClick={() => handleSendReminder(payment)}
+                                    >
                                       <MessageSquare className="h-4 w-4 mr-2" />
                                       Send Reminder
                                     </Button>

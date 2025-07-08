@@ -8,9 +8,38 @@ interface WhatsAppMessage {
 
 export async function sendWhatsAppNotification(message: WhatsAppMessage) {
   try {
-    // In a real implementation, you would integrate with WhatsApp Business API
-    // For now, we'll store these as communications in the database
+    // Get WhatsApp API settings
+    const whatsappToken = await storage.getSetting('whatsapp_token');
+    const phoneNumberId = await storage.getSetting('whatsapp_phone_number_id');
     
+    if (!whatsappToken?.value || !phoneNumberId?.value) {
+      throw new Error("WhatsApp API not configured. Please add your WhatsApp Business API credentials in Settings.");
+    }
+
+    // Real WhatsApp Business API integration
+    const response = await fetch(`https://graph.facebook.com/v18.0/${phoneNumberId.value}/messages`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${whatsappToken.value}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: message.to.replace(/[^0-9]/g, ''), // Remove non-numeric characters
+        type: 'text',
+        text: {
+          body: message.message
+        }
+      })
+    });
+
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(`WhatsApp API error: ${result.error?.message || 'Unknown error'}`);
+    }
+
+    // Store in database
     await storage.createCommunication({
       type: 'whatsapp',
       recipient: message.to,
@@ -18,14 +47,32 @@ export async function sendWhatsAppNotification(message: WhatsAppMessage) {
       content: message.message,
       status: 'sent',
       sentAt: new Date(),
-      metadata: { messageType: message.type }
+      metadata: { 
+        messageType: message.type,
+        messageId: result.messages?.[0]?.id || `wa_${Date.now()}`
+      }
     });
 
     console.log(`WhatsApp message sent to ${message.to}: ${message.message}`);
-    return { success: true, messageId: `wa_${Date.now()}` };
+    return { success: true, messageId: result.messages?.[0]?.id || `wa_${Date.now()}` };
   } catch (error) {
     console.error("WhatsApp notification error:", error);
-    throw new Error("Failed to send WhatsApp notification");
+    
+    // Store failed message in database
+    await storage.createCommunication({
+      type: 'whatsapp',
+      recipient: message.to,
+      subject: getSubjectByType(message.type),
+      content: message.message,
+      status: 'failed',
+      sentAt: new Date(),
+      metadata: { 
+        messageType: message.type,
+        error: error.message
+      }
+    });
+    
+    throw new Error(`Failed to send WhatsApp notification: ${error.message}`);
   }
 }
 

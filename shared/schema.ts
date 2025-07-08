@@ -220,13 +220,26 @@ export const insertSportSchema = createInsertSchema(sports);
 export const selectSportSchema = createSelectSchema(sports);
 export const insertBatchSchema = createInsertSchema(batches);
 export const selectBatchSchema = createSelectSchema(batches);
-export const insertStudentSchema = createInsertSchema(students);
+export const insertStudentSchema = createInsertSchema(students).omit({ 
+  id: true, 
+  studentId: true, 
+  createdAt: true 
+});
 export const selectStudentSchema = createSelectSchema(students);
-export const insertPaymentSchema = createInsertSchema(payments);
+export const insertPaymentSchema = createInsertSchema(payments).omit({ 
+  id: true, 
+  createdAt: true 
+});
 export const selectPaymentSchema = createSelectSchema(payments);
-export const insertAttendanceSchema = createInsertSchema(attendance);
+export const insertAttendanceSchema = createInsertSchema(attendance).omit({ 
+  id: true, 
+  markedAt: true 
+});
 export const selectAttendanceSchema = createSelectSchema(attendance);
-export const insertActivitySchema = createInsertSchema(activities);
+export const insertActivitySchema = createInsertSchema(activities).omit({ 
+  id: true, 
+  createdAt: true 
+});
 export const selectActivitySchema = createSelectSchema(activities);
 export const insertCommunicationSchema = createInsertSchema(communications);
 export const selectCommunicationSchema = createSelectSchema(communications);
