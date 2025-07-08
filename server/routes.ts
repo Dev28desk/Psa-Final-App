@@ -385,5 +385,187 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Settings routes
+  app.get('/api/settings', async (req, res) => {
+    try {
+      const settings = await storage.getSettings();
+      const settingsMap = settings.reduce((acc, setting) => {
+        acc[setting.key] = setting.value;
+        return acc;
+      }, {} as Record<string, any>);
+      res.json(settingsMap);
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      res.status(500).json({ error: 'Failed to fetch settings' });
+    }
+  });
+
+  app.post('/api/settings', async (req, res) => {
+    try {
+      const { key, value, category = 'general' } = req.body;
+      const setting = await storage.setSetting(key, value, category);
+      res.json(setting);
+    } catch (error) {
+      console.error('Error updating setting:', error);
+      res.status(500).json({ error: 'Failed to update setting' });
+    }
+  });
+
+  // Sports routes
+  app.get('/api/sports/stats', async (req, res) => {
+    try {
+      const sports = await storage.getSports();
+      const totalSports = sports.length;
+      const activeSports = sports.filter(s => s.isActive).length;
+      const students = await storage.getStudents();
+      const totalStudents = students.students.length;
+      const avgFee = sports.reduce((sum, sport) => sum + (sport.feeStructure?.skillLevels?.intermediate || 0), 0) / totalSports || 0;
+      
+      res.json({
+        totalSports,
+        activeSports,
+        totalStudents,
+        avgFee: Math.round(avgFee)
+      });
+    } catch (error) {
+      console.error('Error fetching sports stats:', error);
+      res.status(500).json({ error: 'Failed to fetch sports stats' });
+    }
+  });
+
+  app.post('/api/sports', async (req, res) => {
+    try {
+      const sport = await storage.createSport(req.body);
+      res.json(sport);
+    } catch (error) {
+      console.error('Error creating sport:', error);
+      res.status(500).json({ error: 'Failed to create sport' });
+    }
+  });
+
+  app.put('/api/sports/:id', async (req, res) => {
+    try {
+      const sport = await storage.updateSport(parseInt(req.params.id), req.body);
+      res.json(sport);
+    } catch (error) {
+      console.error('Error updating sport:', error);
+      res.status(500).json({ error: 'Failed to update sport' });
+    }
+  });
+
+  // Batches routes
+  app.get('/api/batches/stats', async (req, res) => {
+    try {
+      const batches = await storage.getBatches();
+      const totalBatches = batches.length;
+      const activeBatches = batches.filter(b => b.isActive).length;
+      const totalStudents = batches.reduce((sum, batch) => sum + (batch.currentCapacity || 0), 0);
+      const avgCapacity = batches.reduce((sum, batch) => sum + ((batch.currentCapacity || 0) / batch.maxCapacity * 100), 0) / totalBatches || 0;
+      
+      res.json({
+        totalBatches,
+        activeBatches,
+        totalStudents,
+        avgCapacity: Math.round(avgCapacity)
+      });
+    } catch (error) {
+      console.error('Error fetching batch stats:', error);
+      res.status(500).json({ error: 'Failed to fetch batch stats' });
+    }
+  });
+
+  app.post('/api/batches', async (req, res) => {
+    try {
+      const batch = await storage.createBatch(req.body);
+      res.json(batch);
+    } catch (error) {
+      console.error('Error creating batch:', error);
+      res.status(500).json({ error: 'Failed to create batch' });
+    }
+  });
+
+  app.put('/api/batches/:id', async (req, res) => {
+    try {
+      const batch = await storage.updateBatch(parseInt(req.params.id), req.body);
+      res.json(batch);
+    } catch (error) {
+      console.error('Error updating batch:', error);
+      res.status(500).json({ error: 'Failed to update batch' });
+    }
+  });
+
+  // Communications routes
+  app.get('/api/communications/stats', async (req, res) => {
+    try {
+      const communications = await storage.getCommunications();
+      const totalSent = communications.communications.length;
+      const delivered = communications.communications.filter(c => c.status === 'delivered').length;
+      const failed = communications.communications.filter(c => c.status === 'failed').length;
+      const deliveryRate = totalSent > 0 ? Math.round((delivered / totalSent) * 100) : 0;
+      
+      res.json({
+        totalSent,
+        delivered,
+        failed,
+        deliveryRate
+      });
+    } catch (error) {
+      console.error('Error fetching communication stats:', error);
+      res.status(500).json({ error: 'Failed to fetch communication stats' });
+    }
+  });
+
+  app.post('/api/communications/send', async (req, res) => {
+    try {
+      const communication = await storage.createCommunication(req.body);
+      res.json(communication);
+    } catch (error) {
+      console.error('Error sending communication:', error);
+      res.status(500).json({ error: 'Failed to send communication' });
+    }
+  });
+
+  // Payment gateways routes
+  app.get('/api/payment-gateways', async (req, res) => {
+    try {
+      const gateways = await storage.getPaymentGateways();
+      res.json(gateways);
+    } catch (error) {
+      console.error('Error fetching payment gateways:', error);
+      res.status(500).json({ error: 'Failed to fetch payment gateways' });
+    }
+  });
+
+  app.post('/api/payment-gateways', async (req, res) => {
+    try {
+      const gateway = await storage.createPaymentGateway(req.body);
+      res.json(gateway);
+    } catch (error) {
+      console.error('Error creating payment gateway:', error);
+      res.status(500).json({ error: 'Failed to create payment gateway' });
+    }
+  });
+
+  // Icons routes
+  app.get('/api/icons', async (req, res) => {
+    try {
+      const icons = await storage.getIcons();
+      res.json(icons);
+    } catch (error) {
+      console.error('Error fetching icons:', error);
+      res.status(500).json({ error: 'Failed to fetch icons' });
+    }
+  });
+
+  app.post('/api/icons', async (req, res) => {
+    try {
+      const icon = await storage.createIcon(req.body);
+      res.json(icon);
+    } catch (error) {
+      console.error('Error creating icon:', error);
+      res.status(500).json({ error: 'Failed to create icon' });
+    }
+  });
+
   return httpServer;
 }

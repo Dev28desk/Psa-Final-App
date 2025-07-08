@@ -117,6 +117,42 @@ export const communications = pgTable("communications", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Settings table for system configuration
+export const settings = pgTable("settings", {
+  id: serial("id").primaryKey(),
+  category: text("category").notNull(), // general, payments, notifications, appearance, security
+  key: text("key").notNull().unique(),
+  value: jsonb("value").notNull(),
+  description: text("description"),
+  isActive: boolean("is_active").default(true),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Icons table for customizable icons
+export const icons = pgTable("icons", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  category: text("category").notNull(), // sports, actions, navigation, misc
+  svgPath: text("svg_path").notNull(),
+  isDefault: boolean("is_default").default(false),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Payment gateways configuration
+export const paymentGateways = pgTable("payment_gateways", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(), // stripe, paypal, razorpay, paytm
+  displayName: text("display_name").notNull(),
+  configuration: jsonb("configuration").notNull(), // API keys, webhook URLs, etc.
+  isActive: boolean("is_active").default(false),
+  isDefault: boolean("is_default").default(false),
+  supportedMethods: jsonb("supported_methods").default([]), // card, upi, wallet, netbanking
+  fees: jsonb("fees").default({}), // transaction fees structure
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Define relations
 export const usersRelations = relations(users, ({ many }) => ({
   students: many(students),
@@ -176,6 +212,12 @@ export const insertActivitySchema = createInsertSchema(activities);
 export const selectActivitySchema = createSelectSchema(activities);
 export const insertCommunicationSchema = createInsertSchema(communications);
 export const selectCommunicationSchema = createSelectSchema(communications);
+export const insertSettingSchema = createInsertSchema(settings);
+export const selectSettingSchema = createSelectSchema(settings);
+export const insertIconSchema = createInsertSchema(icons);
+export const selectIconSchema = createSelectSchema(icons);
+export const insertPaymentGatewaySchema = createInsertSchema(paymentGateways);
+export const selectPaymentGatewaySchema = createSelectSchema(paymentGateways);
 
 // Export types
 export type User = typeof users.$inferSelect;
@@ -194,3 +236,9 @@ export type Activity = typeof activities.$inferSelect;
 export type InsertActivity = typeof activities.$inferInsert;
 export type Communication = typeof communications.$inferSelect;
 export type InsertCommunication = typeof communications.$inferInsert;
+export type Setting = typeof settings.$inferSelect;
+export type InsertSetting = typeof settings.$inferInsert;
+export type Icon = typeof icons.$inferSelect;
+export type InsertIcon = typeof icons.$inferInsert;
+export type PaymentGateway = typeof paymentGateways.$inferSelect;
+export type InsertPaymentGateway = typeof paymentGateways.$inferInsert;

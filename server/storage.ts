@@ -1,8 +1,9 @@
 import { 
-  users, students, sports, batches, payments, attendance, activities, communications,
+  users, students, sports, batches, payments, attendance, activities, communications, settings, icons, paymentGateways,
   type User, type InsertUser, type Student, type InsertStudent, type Sport, type InsertSport,
   type Batch, type InsertBatch, type Payment, type InsertPayment, type Attendance, type InsertAttendance,
-  type Activity, type InsertActivity, type Communication, type InsertCommunication
+  type Activity, type InsertActivity, type Communication, type InsertCommunication,
+  type Setting, type InsertSetting, type Icon, type InsertIcon, type PaymentGateway, type InsertPaymentGateway
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, gte, lte, count, sum, avg, like, sql } from "drizzle-orm";
@@ -115,6 +116,26 @@ export interface IStorage {
       percentage: number;
     }>;
   }>;
+
+  // Settings operations
+  getSetting(key: string): Promise<Setting | undefined>;
+  getSettings(category?: string): Promise<Setting[]>;
+  setSetting(key: string, value: any, category?: string): Promise<Setting>;
+  updateSetting(key: string, value: any): Promise<Setting | undefined>;
+
+  // Icons operations
+  getIcons(category?: string): Promise<Icon[]>;
+  getIcon(id: number): Promise<Icon | undefined>;
+  createIcon(icon: InsertIcon): Promise<Icon>;
+  updateIcon(id: number, updates: Partial<InsertIcon>): Promise<Icon | undefined>;
+  deleteIcon(id: number): Promise<boolean>;
+
+  // Payment gateways operations
+  getPaymentGateways(): Promise<PaymentGateway[]>;
+  getPaymentGateway(id: number): Promise<PaymentGateway | undefined>;
+  createPaymentGateway(gateway: InsertPaymentGateway): Promise<PaymentGateway>;
+  updatePaymentGateway(id: number, updates: Partial<InsertPaymentGateway>): Promise<PaymentGateway | undefined>;
+  deletePaymentGateway(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -626,6 +647,97 @@ export class DatabaseStorage implements IStorage {
     });
 
     return { students: studentStats };
+  }
+
+  // Settings operations
+  async getSetting(key: string): Promise<Setting | undefined> {
+    const [setting] = await db.select().from(settings).where(eq(settings.key, key));
+    return setting;
+  }
+
+  async getSettings(category?: string): Promise<Setting[]> {
+    const conditions = category ? [eq(settings.category, category)] : [];
+    return await db.select().from(settings).where(and(...conditions));
+  }
+
+  async setSetting(key: string, value: any, category = 'general'): Promise<Setting> {
+    const [setting] = await db
+      .insert(settings)
+      .values({ key, value, category })
+      .onConflictDoUpdate({
+        target: settings.key,
+        set: { value, updatedAt: new Date() }
+      })
+      .returning();
+    return setting;
+  }
+
+  async updateSetting(key: string, value: any): Promise<Setting | undefined> {
+    const [setting] = await db
+      .update(settings)
+      .set({ value, updatedAt: new Date() })
+      .where(eq(settings.key, key))
+      .returning();
+    return setting;
+  }
+
+  // Icons operations
+  async getIcons(category?: string): Promise<Icon[]> {
+    const conditions = category ? [eq(icons.category, category)] : [];
+    return await db.select().from(icons).where(and(...conditions));
+  }
+
+  async getIcon(id: number): Promise<Icon | undefined> {
+    const [icon] = await db.select().from(icons).where(eq(icons.id, id));
+    return icon;
+  }
+
+  async createIcon(iconData: InsertIcon): Promise<Icon> {
+    const [icon] = await db.insert(icons).values(iconData).returning();
+    return icon;
+  }
+
+  async updateIcon(id: number, updates: Partial<InsertIcon>): Promise<Icon | undefined> {
+    const [icon] = await db
+      .update(icons)
+      .set(updates)
+      .where(eq(icons.id, id))
+      .returning();
+    return icon;
+  }
+
+  async deleteIcon(id: number): Promise<boolean> {
+    const result = await db.delete(icons).where(eq(icons.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Payment gateways operations
+  async getPaymentGateways(): Promise<PaymentGateway[]> {
+    return await db.select().from(paymentGateways);
+  }
+
+  async getPaymentGateway(id: number): Promise<PaymentGateway | undefined> {
+    const [gateway] = await db.select().from(paymentGateways).where(eq(paymentGateways.id, id));
+    return gateway;
+  }
+
+  async createPaymentGateway(gatewayData: InsertPaymentGateway): Promise<PaymentGateway> {
+    const [gateway] = await db.insert(paymentGateways).values(gatewayData).returning();
+    return gateway;
+  }
+
+  async updatePaymentGateway(id: number, updates: Partial<InsertPaymentGateway>): Promise<PaymentGateway | undefined> {
+    const [gateway] = await db
+      .update(paymentGateways)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(paymentGateways.id, id))
+      .returning();
+    return gateway;
+  }
+
+  async deletePaymentGateway(id: number): Promise<boolean> {
+    const result = await db.delete(paymentGateways).where(eq(paymentGateways.id, id));
+    return result.rowCount > 0;
   }
 }
 

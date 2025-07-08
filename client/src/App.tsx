@@ -9,6 +9,10 @@ import Fees from "@/pages/fees";
 import Attendance from "@/pages/attendance";
 import Reports from "@/pages/reports";
 import AIInsights from "@/pages/ai-insights";
+import Settings from "@/pages/settings";
+import Sports from "@/pages/sports";
+import Coaches from "@/pages/coaches";
+import Batches from "@/pages/batches";
 import NotFound from "@/pages/not-found";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
@@ -28,6 +32,10 @@ function Router() {
               <Route path="/attendance" component={Attendance} />
               <Route path="/reports" component={Reports} />
               <Route path="/ai-insights" component={AIInsights} />
+              <Route path="/settings" component={Settings} />
+              <Route path="/sports" component={Sports} />
+              <Route path="/coaches" component={Coaches} />
+              <Route path="/batches" component={Batches} />
               <Route component={NotFound} />
             </Switch>
           </div>
