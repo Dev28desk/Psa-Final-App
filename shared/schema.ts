@@ -167,6 +167,55 @@ export const paymentGateways = pgTable("payment_gateways", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// WhatsApp Campaigns table
+export const campaigns = pgTable("campaigns", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  type: text("type").notNull(), // welcome, fee_reminder, attendance_followup, birthday, event, custom
+  status: text("status").notNull().default("draft"), // draft, active, paused, completed
+  trigger: text("trigger").notNull(), // manual, scheduled, automated
+  targetAudience: jsonb("target_audience").notNull(), // { type: 'all' | 'sport' | 'batch' | 'custom', filters: {} }
+  messageTemplate: jsonb("message_template").notNull(), // { text, media, buttons, variables }
+  schedule: jsonb("schedule"), // { startDate, endDate, time, frequency }
+  automationRules: jsonb("automation_rules"), // { conditions, actions }
+  analytics: jsonb("analytics").default({}), // { sent, delivered, read, replied, failed }
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  lastRunAt: timestamp("last_run_at"),
+});
+
+// Campaign Messages table (for tracking individual messages)
+export const campaignMessages = pgTable("campaign_messages", {
+  id: serial("id").primaryKey(),
+  campaignId: integer("campaign_id").references(() => campaigns.id),
+  recipient: text("recipient").notNull(), // phone number
+  studentId: integer("student_id").references(() => students.id),
+  messageContent: text("message_content").notNull(),
+  status: text("status").notNull().default("pending"), // pending, sent, delivered, read, failed
+  whatsappMessageId: text("whatsapp_message_id"),
+  sentAt: timestamp("sent_at"),
+  deliveredAt: timestamp("delivered_at"),
+  readAt: timestamp("read_at"),
+  errorMessage: text("error_message"),
+  metadata: jsonb("metadata"), // Additional tracking data
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Message Templates table
+export const messageTemplates = pgTable("message_templates", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  category: text("category").notNull(), // greeting, reminder, notification, promotional
+  language: text("language").notNull().default("en"),
+  content: jsonb("content").notNull(), // { text, media, buttons, variables }
+  variables: jsonb("variables"), // Available merge variables
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Define relations
 export const usersRelations = relations(users, ({ many }) => ({
   students: many(students),
@@ -213,6 +262,16 @@ export const activitiesRelations = relations(activities, ({ one }) => ({
   user: one(users, { fields: [activities.userId], references: [users.id] }),
 }));
 
+export const campaignsRelations = relations(campaigns, ({ one, many }) => ({
+  createdBy: one(users, { fields: [campaigns.createdBy], references: [users.id] }),
+  messages: many(campaignMessages),
+}));
+
+export const campaignMessagesRelations = relations(campaignMessages, ({ one }) => ({
+  campaign: one(campaigns, { fields: [campaignMessages.campaignId], references: [campaigns.id] }),
+  student: one(students, { fields: [campaignMessages.studentId], references: [students.id] }),
+}));
+
 // Schema types
 export const insertUserSchema = createInsertSchema(users);
 export const selectUserSchema = createSelectSchema(users);
@@ -251,6 +310,24 @@ export const insertPaymentGatewaySchema = createInsertSchema(paymentGateways);
 export const selectPaymentGatewaySchema = createSelectSchema(paymentGateways);
 export const insertCoachSchema = createInsertSchema(coaches);
 export const selectCoachSchema = createSelectSchema(coaches);
+export const insertCampaignSchema = createInsertSchema(campaigns).omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true,
+  lastRunAt: true 
+});
+export const selectCampaignSchema = createSelectSchema(campaigns);
+export const insertCampaignMessageSchema = createInsertSchema(campaignMessages).omit({ 
+  id: true, 
+  createdAt: true 
+});
+export const selectCampaignMessageSchema = createSelectSchema(campaignMessages);
+export const insertMessageTemplateSchema = createInsertSchema(messageTemplates).omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true 
+});
+export const selectMessageTemplateSchema = createSelectSchema(messageTemplates);
 
 // Export types
 export type User = typeof users.$inferSelect;
@@ -277,3 +354,9 @@ export type Icon = typeof icons.$inferSelect;
 export type InsertIcon = typeof icons.$inferInsert;
 export type PaymentGateway = typeof paymentGateways.$inferSelect;
 export type InsertPaymentGateway = typeof paymentGateways.$inferInsert;
+export type Campaign = typeof campaigns.$inferSelect;
+export type InsertCampaign = typeof campaigns.$inferInsert;
+export type CampaignMessage = typeof campaignMessages.$inferSelect;
+export type InsertCampaignMessage = typeof campaignMessages.$inferInsert;
+export type MessageTemplate = typeof messageTemplates.$inferSelect;
+export type InsertMessageTemplate = typeof messageTemplates.$inferInsert;

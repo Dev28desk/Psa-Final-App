@@ -1,9 +1,12 @@
 import { 
   users, coaches, students, sports, batches, payments, attendance, activities, communications, settings, icons, paymentGateways,
+  campaigns, campaignMessages, messageTemplates,
   type User, type InsertUser, type Coach, type InsertCoach, type Student, type InsertStudent, type Sport, type InsertSport,
   type Batch, type InsertBatch, type Payment, type InsertPayment, type Attendance, type InsertAttendance,
   type Activity, type InsertActivity, type Communication, type InsertCommunication,
-  type Setting, type InsertSetting, type Icon, type InsertIcon, type PaymentGateway, type InsertPaymentGateway
+  type Setting, type InsertSetting, type Icon, type InsertIcon, type PaymentGateway, type InsertPaymentGateway,
+  type Campaign, type InsertCampaign, type CampaignMessage, type InsertCampaignMessage,
+  type MessageTemplate, type InsertMessageTemplate
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, gte, lte, count, sum, avg, like, sql } from "drizzle-orm";
@@ -143,6 +146,33 @@ export interface IStorage {
   createPaymentGateway(gateway: InsertPaymentGateway): Promise<PaymentGateway>;
   updatePaymentGateway(id: number, updates: Partial<InsertPaymentGateway>): Promise<PaymentGateway | undefined>;
   deletePaymentGateway(id: number): Promise<boolean>;
+
+  // Campaign operations
+  getCampaigns(filters?: { status?: string; type?: string }): Promise<Campaign[]>;
+  getCampaign(id: number): Promise<Campaign | undefined>;
+  createCampaign(campaign: InsertCampaign): Promise<Campaign>;
+  updateCampaign(id: number, updates: Partial<InsertCampaign>): Promise<Campaign | undefined>;
+  deleteCampaign(id: number): Promise<boolean>;
+  
+  // Campaign message operations
+  getCampaignMessages(campaignId: number): Promise<CampaignMessage[]>;
+  createCampaignMessage(message: InsertCampaignMessage): Promise<CampaignMessage>;
+  updateCampaignMessage(id: number, updates: Partial<InsertCampaignMessage>): Promise<CampaignMessage | undefined>;
+  getCampaignAnalytics(campaignId: number): Promise<{
+    sent: number;
+    delivered: number;
+    read: number;
+    failed: number;
+    deliveryRate: number;
+    readRate: number;
+  }>;
+
+  // Message template operations
+  getMessageTemplates(category?: string): Promise<MessageTemplate[]>;
+  getMessageTemplate(id: number): Promise<MessageTemplate | undefined>;
+  createMessageTemplate(template: InsertMessageTemplate): Promise<MessageTemplate>;
+  updateMessageTemplate(id: number, updates: Partial<InsertMessageTemplate>): Promise<MessageTemplate | undefined>;
+  deleteMessageTemplate(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -775,6 +805,174 @@ export class DatabaseStorage implements IStorage {
   async deletePaymentGateway(id: number): Promise<boolean> {
     const result = await db.delete(paymentGateways).where(eq(paymentGateways.id, id));
     return result.rowCount > 0;
+  }
+
+  // Campaign operations
+  async getCampaigns(filters?: { status?: string; type?: string }): Promise<Campaign[]> {
+    try {
+      let query = db.select().from(campaigns);
+      
+      if (filters?.status) {
+        query = query.where(eq(campaigns.status, filters.status));
+      }
+      if (filters?.type) {
+        query = query.where(eq(campaigns.type, filters.type));
+      }
+      
+      return await query.orderBy(campaigns.createdAt);
+    } catch (error) {
+      console.error("Error fetching campaigns:", error);
+      return [];
+    }
+  }
+
+  async getCampaign(id: number): Promise<Campaign | undefined> {
+    try {
+      const [campaign] = await db.select().from(campaigns).where(eq(campaigns.id, id));
+      return campaign;
+    } catch (error) {
+      console.error("Error fetching campaign:", error);
+      return undefined;
+    }
+  }
+
+  async createCampaign(campaignData: InsertCampaign): Promise<Campaign> {
+    const [campaign] = await db.insert(campaigns).values(campaignData).returning();
+    return campaign;
+  }
+
+  async updateCampaign(id: number, updates: Partial<InsertCampaign>): Promise<Campaign | undefined> {
+    try {
+      const [campaign] = await db
+        .update(campaigns)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(campaigns.id, id))
+        .returning();
+      return campaign;
+    } catch (error) {
+      console.error("Error updating campaign:", error);
+      return undefined;
+    }
+  }
+
+  async deleteCampaign(id: number): Promise<boolean> {
+    try {
+      await db.delete(campaigns).where(eq(campaigns.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error deleting campaign:", error);
+      return false;
+    }
+  }
+
+  // Campaign message operations
+  async getCampaignMessages(campaignId: number): Promise<CampaignMessage[]> {
+    try {
+      return await db.select().from(campaignMessages)
+        .where(eq(campaignMessages.campaignId, campaignId))
+        .orderBy(campaignMessages.createdAt);
+    } catch (error) {
+      console.error("Error fetching campaign messages:", error);
+      return [];
+    }
+  }
+
+  async createCampaignMessage(messageData: InsertCampaignMessage): Promise<CampaignMessage> {
+    const [message] = await db.insert(campaignMessages).values(messageData).returning();
+    return message;
+  }
+
+  async updateCampaignMessage(id: number, updates: Partial<InsertCampaignMessage>): Promise<CampaignMessage | undefined> {
+    try {
+      const [message] = await db
+        .update(campaignMessages)
+        .set(updates)
+        .where(eq(campaignMessages.id, id))
+        .returning();
+      return message;
+    } catch (error) {
+      console.error("Error updating campaign message:", error);
+      return undefined;
+    }
+  }
+
+  async getCampaignAnalytics(campaignId: number): Promise<{
+    sent: number;
+    delivered: number;
+    read: number;
+    failed: number;
+    deliveryRate: number;
+    readRate: number;
+  }> {
+    try {
+      const messages = await this.getCampaignMessages(campaignId);
+      const sent = messages.filter(m => m.status === 'sent' || m.status === 'delivered' || m.status === 'read').length;
+      const delivered = messages.filter(m => m.status === 'delivered' || m.status === 'read').length;
+      const read = messages.filter(m => m.status === 'read').length;
+      const failed = messages.filter(m => m.status === 'failed').length;
+      const deliveryRate = sent > 0 ? Math.round((delivered / sent) * 100) : 0;
+      const readRate = delivered > 0 ? Math.round((read / delivered) * 100) : 0;
+      
+      return { sent, delivered, read, failed, deliveryRate, readRate };
+    } catch (error) {
+      console.error("Error fetching campaign analytics:", error);
+      return { sent: 0, delivered: 0, read: 0, failed: 0, deliveryRate: 0, readRate: 0 };
+    }
+  }
+
+  // Message template operations
+  async getMessageTemplates(category?: string): Promise<MessageTemplate[]> {
+    try {
+      let query = db.select().from(messageTemplates).where(eq(messageTemplates.isActive, true));
+      
+      if (category) {
+        query = query.where(eq(messageTemplates.category, category));
+      }
+      
+      return await query.orderBy(messageTemplates.createdAt);
+    } catch (error) {
+      console.error("Error fetching message templates:", error);
+      return [];
+    }
+  }
+
+  async getMessageTemplate(id: number): Promise<MessageTemplate | undefined> {
+    try {
+      const [template] = await db.select().from(messageTemplates).where(eq(messageTemplates.id, id));
+      return template;
+    } catch (error) {
+      console.error("Error fetching message template:", error);
+      return undefined;
+    }
+  }
+
+  async createMessageTemplate(templateData: InsertMessageTemplate): Promise<MessageTemplate> {
+    const [template] = await db.insert(messageTemplates).values(templateData).returning();
+    return template;
+  }
+
+  async updateMessageTemplate(id: number, updates: Partial<InsertMessageTemplate>): Promise<MessageTemplate | undefined> {
+    try {
+      const [template] = await db
+        .update(messageTemplates)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(messageTemplates.id, id))
+        .returning();
+      return template;
+    } catch (error) {
+      console.error("Error updating message template:", error);
+      return undefined;
+    }
+  }
+
+  async deleteMessageTemplate(id: number): Promise<boolean> {
+    try {
+      await db.delete(messageTemplates).where(eq(messageTemplates.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error deleting message template:", error);
+      return false;
+    }
   }
 }
 

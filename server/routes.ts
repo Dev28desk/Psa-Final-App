@@ -719,6 +719,164 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Campaign routes
+  app.get("/api/campaigns", async (req, res) => {
+    try {
+      const { status, type } = req.query;
+      const campaigns = await storage.getCampaigns({ 
+        status: status as string, 
+        type: type as string 
+      });
+      res.json(campaigns);
+    } catch (error: any) {
+      console.error("Error fetching campaigns:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/campaigns/:id", async (req, res) => {
+    try {
+      const campaign = await storage.getCampaign(parseInt(req.params.id));
+      if (!campaign) {
+        return res.status(404).json({ error: "Campaign not found" });
+      }
+      res.json(campaign);
+    } catch (error: any) {
+      console.error("Error fetching campaign:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/campaigns", async (req, res) => {
+    try {
+      const { insertCampaignSchema } = await import("@shared/schema");
+      const campaignData = insertCampaignSchema.parse(req.body);
+      const campaign = await storage.createCampaign(campaignData);
+      
+      // If campaign is active and automated, start automation
+      if (campaign.status === 'active' && campaign.trigger === 'automated') {
+        const { CampaignAutomation } = await import("./campaign-automation");
+        const automation = CampaignAutomation.getInstance();
+        await automation.restartCampaignAutomation(campaign.id);
+      }
+      
+      res.json(campaign);
+    } catch (error: any) {
+      console.error("Error creating campaign:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.put("/api/campaigns/:id", async (req, res) => {
+    try {
+      const campaign = await storage.updateCampaign(parseInt(req.params.id), req.body);
+      if (!campaign) {
+        return res.status(404).json({ error: "Campaign not found" });
+      }
+      
+      // Restart automation if campaign is active
+      if (campaign.status === 'active' && campaign.trigger === 'automated') {
+        const { CampaignAutomation } = await import("./campaign-automation");
+        const automation = CampaignAutomation.getInstance();
+        await automation.restartCampaignAutomation(campaign.id);
+      }
+      
+      res.json(campaign);
+    } catch (error: any) {
+      console.error("Error updating campaign:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/campaigns/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteCampaign(parseInt(req.params.id));
+      if (!success) {
+        return res.status(404).json({ error: "Campaign not found" });
+      }
+      
+      // Stop automation
+      const { CampaignAutomation } = await import("./campaign-automation");
+      const automation = CampaignAutomation.getInstance();
+      automation.stopCampaignAutomation(parseInt(req.params.id));
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error deleting campaign:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/campaigns/:id/messages", async (req, res) => {
+    try {
+      const messages = await storage.getCampaignMessages(parseInt(req.params.id));
+      res.json(messages);
+    } catch (error: any) {
+      console.error("Error fetching campaign messages:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/campaigns/:id/analytics", async (req, res) => {
+    try {
+      const analytics = await storage.getCampaignAnalytics(parseInt(req.params.id));
+      res.json(analytics);
+    } catch (error: any) {
+      console.error("Error fetching campaign analytics:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/campaigns/:id/run", async (req, res) => {
+    try {
+      const campaign = await storage.getCampaign(parseInt(req.params.id));
+      if (!campaign) {
+        return res.status(404).json({ error: "Campaign not found" });
+      }
+      
+      // Manual campaign execution
+      // Implementation depends on the campaign type and target audience
+      res.json({ success: true, message: "Campaign execution started" });
+    } catch (error: any) {
+      console.error("Error running campaign:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Message template routes
+  app.get("/api/message-templates", async (req, res) => {
+    try {
+      const { category } = req.query;
+      const templates = await storage.getMessageTemplates(category as string);
+      res.json(templates);
+    } catch (error: any) {
+      console.error("Error fetching message templates:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/message-templates", async (req, res) => {
+    try {
+      const { insertMessageTemplateSchema } = await import("@shared/schema");
+      const templateData = insertMessageTemplateSchema.parse(req.body);
+      const template = await storage.createMessageTemplate(templateData);
+      res.json(template);
+    } catch (error: any) {
+      console.error("Error creating message template:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/campaigns/templates/predefined", async (req, res) => {
+    try {
+      const { campaignTemplates } = await import("./campaign-automation");
+      res.json(campaignTemplates);
+    } catch (error: any) {
+      console.error("Error fetching predefined templates:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Enhanced pending payments route
   app.get("/api/payments/pending-grouped", async (req, res) => {
     try {

@@ -66,5 +66,17 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    
+    // Initialize campaign automation
+    setTimeout(async () => {
+      try {
+        const { CampaignAutomation } = await import("./campaign-automation");
+        const automation = CampaignAutomation.getInstance();
+        await automation.initializeAutomation();
+        log("Campaign automation initialized successfully");
+      } catch (error) {
+        console.error("Failed to initialize campaign automation:", error);
+      }
+    }, 5000); // Wait 5 seconds for server to fully start
   });
 })();
