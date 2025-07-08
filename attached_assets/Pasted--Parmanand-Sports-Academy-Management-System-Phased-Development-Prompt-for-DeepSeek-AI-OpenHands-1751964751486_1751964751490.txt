@@ -1,0 +1,667 @@
+# Parmanand Sports Academy Management System - Phased Development Prompt for DeepSeek AI & OpenHands
+
+## 🎯 Development Strategy & Git Workflow
+
+### Initial Setup Phase
+**Before starting development:**
+1. Create a new GitHub repository named: `parmanand-sports-academy`
+2. Initialize with README.md and .gitignore for Node.js
+3. Create branch structure:
+   - `main` (production-ready code)
+   - `develop` (integration branch)
+   - `feature/*` (individual features)
+4. Set up commit conventions: `feat:`, `fix:`, `docs:`, `refactor:`
+
+### Development Approach
+- **Work in small chunks** to prevent AI overload
+- **Take breaks between phases** to review generated code
+- **Commit after each successful phase**
+- **Test before moving to next phase**
+- **Document as you go**
+
+---
+
+## 📋 Phase 0: Project Foundation & Design Setup
+
+### Task 0.1: Repository Setup
+```
+Action: Create and setup git repository
+Repository Name: parmanand-sports-academy
+Description: Comprehensive sports academy management system with React Native + Expo
+```
+
+### Task 0.2: Figma Design Setup
+```
+Action: Create Figma design system
+URL: https://www.figma.com
+Project Name: Parmanand Sports Academy UI/UX
+Components to design:
+- Mobile App screens (Student, Coach, Parent views)
+- Admin Dashboard layouts
+- Digital Student Card design
+- Color system and typography
+- Component library (buttons, forms, cards)
+- Icons and illustrations
+```
+
+### Task 0.3: Project Structure
+Create the following folder structure:
+```
+parmanand-sports-academy/
+├── backend/
+│   ├── src/
+│   ├── config/
+│   └── package.json
+├── mobile/
+│   ├── src/
+│   ├── assets/
+│   └── package.json
+├── web/
+│   ├── src/
+│   ├── public/
+│   └── package.json
+├── shared/
+│   └── types/
+├── docs/
+└── README.md
+```
+
+### Task 0.4: Initialize Projects
+1. Set up Expo project in `/mobile` with TypeScript
+2. Set up Next.js project in `/web` with TypeScript
+3. Set up Express.js in `/backend` with TypeScript
+4. Create shared types package
+
+### Task 0.5: Database Schema Design
+Design PostgreSQL schema with these tables:
+- users (id, name, phone, role, permissions_json, created_at)
+- students (id, name, phone, photo_url, sport_id, batch_id, joining_date)
+- sports (id, name, fee_structure_json, skill_levels_json)
+- payments (id, student_id, amount, type, method, status)
+- attendance (id, student_id, batch_id, date, present, marked_by)
+
+**🛑 STOP HERE - COMMIT PHASE 0**
+```bash
+git add .
+git commit -m "feat: initial project setup with folder structure and database schema"
+git push origin develop
+```
+
+**⏸️ BREAK TIME: 15 minutes**
+- Review the generated structure
+- Ensure all folders are created correctly
+- Check if package.json files are properly configured
+- Verify database schema makes sense
+
+---
+
+## 📋 Phase 1: Authentication System (Day 1-2)
+**Estimated Time: 4-5 hours**
+
+### Task 1.1: Backend Authentication
+Create authentication system with:
+- Phone number + OTP verification
+- JWT token generation
+- Role-based middleware
+- Session management with Redis
+
+### Task 1.2: Database Setup
+1. Create PostgreSQL database
+2. Run migrations for users table
+3. Create seed data for testing
+4. Setup connection pooling
+
+### Task 1.3: API Endpoints
+Create these endpoints:
+- POST /api/auth/send-otp
+- POST /api/auth/verify-otp
+- POST /api/auth/refresh-token
+- GET /api/auth/profile
+
+### Task 1.4: Mobile Authentication UI
+Create React Native screens:
+- Phone number input screen
+- OTP verification screen
+- Profile setup screen
+- Biometric login setup
+
+**🛑 STOP HERE - COMMIT PHASE 1**
+```bash
+git add .
+git commit -m "feat: complete authentication system with OTP verification"
+git push origin develop
+```
+
+**⏸️ BREAK TIME: 30 minutes**
+- Test authentication flow end-to-end
+- Verify OTP is working (use console.log for now)
+- Check JWT tokens are properly generated
+- Ensure mobile UI is responsive
+
+---
+
+## 📋 Phase 2: Student Management Core (Day 2-3)
+**Estimated Time: 6-7 hours**
+
+### Task 2.1: Student Model & APIs
+Create backend functionality:
+- Student CRUD operations
+- Photo upload handling
+- Student search and filtering
+- Batch assignment logic
+
+### Task 2.2: Digital Student Card
+Design the card interface that mimics physical card:
+- Front side: Photo, name, sport, batch
+- Back side: Monthly fee grid (visual checkboxes)
+- QR code generation for student ID
+- Swipeable card animation
+
+### Task 2.3: Registration Flow (Backend)
+Create multi-step registration:
+- Basic info validation
+- Sport and batch selection
+- Fee calculation
+- Initial payment processing (stub for now)
+
+### Task 2.4: Registration UI (Mobile + Web)
+Build registration screens:
+- Step 1: Personal information form
+- Step 2: Sport selection with available batches
+- Step 3: Payment screen (UI only)
+- Step 4: Confirmation and card generation
+
+**🛑 STOP HERE - COMMIT PHASE 2**
+```bash
+git add .
+git commit -m "feat: student management with digital card and registration flow"
+git push origin develop
+```
+
+**⏸️ BREAK TIME: 45 minutes**
+- Create a few test students manually
+- Verify student card displays correctly
+- Test the registration flow
+- Check if sports and batches are properly linked
+
+---
+
+## 📋 Phase 3: Attendance System (Day 3-4)
+**Estimated Time: 5-6 hours**
+
+### Task 3.1: Attendance Backend
+Implement attendance logic:
+- Batch-wise attendance marking
+- Attendance history tracking
+- Streak calculation algorithm
+- Attendance reports generation
+
+### Task 3.2: Coach Location Features
+Add GPS functionality:
+- Geofencing for academy premises
+- Auto check-in for coaches
+- Location validation
+- Offline attendance storage
+
+### Task 3.3: Coach Mobile Interface
+Create coach-specific screens:
+- Today's batches view
+- Grid layout for marking attendance
+- Student photos with quick mark
+- Submit with sync status
+
+### Task 3.4: Student Attendance View
+Build student attendance features:
+- Monthly calendar with color coding
+- Streak counter with animations
+- Attendance percentage display
+- Achievement badges for streaks
+
+**🛑 STOP HERE - COMMIT PHASE 3**
+```bash
+git add .
+git commit -m "feat: attendance system with GPS check-in and streak tracking"
+git push origin develop
+```
+
+**⏸️ BREAK TIME: 1 hour**
+- Test attendance marking flow
+- Verify streak calculations
+- Check offline functionality
+- Ensure GPS permissions are handled
+
+---
+
+## 📋 Phase 4: Fee Management Basics (Day 4-5)
+**Estimated Time: 6-7 hours**
+
+### Task 4.1: Fee Structure Setup
+Create fee management:
+- Sport-wise fee configuration
+- Skill level based pricing
+- Registration fee handling
+- Discount management system
+
+### Task 4.2: Payment Recording
+Build payment recording system:
+- Manual payment entry (cash/UPI)
+- Payment history tracking
+- Receipt generation
+- Due date calculations
+
+### Task 4.3: Office Staff Interface
+Create office staff screens:
+- Fee collection dashboard
+- Student fee status search
+- Quick payment recording
+- Bulk payment entry
+
+### Task 4.4: Payment Status UI
+Design payment visualizations:
+- Monthly grid with payment status
+- Color coded indicators
+- Pending dues highlighting
+- Payment reminder scheduling
+
+**🛑 STOP HERE - COMMIT PHASE 4**
+```bash
+git add .
+git commit -m "feat: basic fee management with manual payment recording"
+git push origin develop
+```
+
+**⏸️ BREAK TIME: 1 hour**
+- Test fee recording process
+- Verify receipt generation
+- Check payment history display
+- Ensure calculations are correct
+
+---
+
+## 📋 Phase 5: Admin Dashboard (Day 5-6)
+**Estimated Time: 5-6 hours**
+
+### Task 5.1: Dashboard Backend
+Create analytics endpoints:
+- Real-time statistics
+- Revenue calculations
+- Sport-wise analytics
+- Attendance summaries
+
+### Task 5.2: Admin Web UI
+Build admin dashboard:
+- Overview widgets
+- Revenue charts
+- Student statistics
+- Quick action buttons
+
+### Task 5.3: User Management
+Implement user administration:
+- Create users with roles
+- Permission assignment
+- User activity logs
+- Password reset functionality
+
+### Task 5.4: Reports Module
+Create basic reports:
+- Daily collection report
+- Monthly fee summary
+- Attendance reports
+- Student list exports
+
+**🛑 STOP HERE - COMMIT PHASE 5**
+```bash
+git add .
+git commit -m "feat: admin dashboard with analytics and user management"
+git push origin develop
+```
+
+**⏸️ BREAK TIME: 2 hours (End of Core Development)**
+- Review all features developed so far
+- Test complete user flows
+- Make a list of bugs found
+- Plan integration testing
+
+---
+
+## 📋 Phase 6: Payment Gateway Integration (Day 7)
+**Estimated Time: 4-5 hours**
+
+### Task 6.1: Razorpay Setup
+Integrate Razorpay:
+- Initialize Razorpay SDK
+- Create payment endpoints
+- Handle webhooks
+- Payment verification
+
+### Task 6.2: Payment UI Updates
+Update payment screens:
+- Add Razorpay checkout
+- Payment method selection
+- Auto-receipt generation
+- Payment success/failure handling
+
+### Task 6.3: Subscription Handling
+Implement recurring payments:
+- Monthly auto-debit setup
+- Subscription management
+- Payment retry logic
+- Failed payment notifications
+
+**🛑 STOP HERE - COMMIT PHASE 6**
+```bash
+git add .
+git commit -m "feat: Razorpay payment gateway integration"
+git push origin develop
+```
+
+**⏸️ BREAK TIME: 45 minutes**
+- Test payment flow with test keys
+- Verify webhook handling
+- Check receipt generation
+- Test payment failure scenarios
+
+---
+
+## 📋 Phase 7: WhatsApp Integration (Day 8)
+**Estimated Time: 4-5 hours**
+
+### Task 7.1: WhatsApp API Setup
+Configure WhatsApp Business:
+- API authentication
+- Template message setup
+- Message queue system
+- Delivery tracking
+
+### Task 7.2: Automated Messages
+Implement message triggers:
+- Welcome messages
+- Fee reminders
+- Attendance alerts
+- Academy announcements
+
+### Task 7.3: Message Templates
+Create message templates:
+- Personalized content
+- Multi-language support
+- Payment links inclusion
+- Call-to-action buttons
+
+**🛑 STOP HERE - COMMIT PHASE 7**
+```bash
+git add .
+git commit -m "feat: WhatsApp Business API integration with automated messaging"
+git push origin develop
+```
+
+**⏸️ BREAK TIME: 30 minutes**
+- Test message delivery
+- Verify template formatting
+- Check scheduling logic
+- Test opt-out handling
+
+---
+
+## 📋 Phase 8: AI Analytics Integration (Day 9)
+**Estimated Time: 5-6 hours**
+
+### Task 8.1: Gemini AI Setup
+Integrate Google Gemini:
+- API authentication
+- Query interface setup
+- Response parsing
+- Error handling
+
+### Task 8.2: Analytics Engine
+Build AI analytics:
+- Natural language query processor
+- Predictive analytics models
+- Insight generation
+- Recommendation system
+
+### Task 8.3: AI Dashboard UI
+Create AI insights interface:
+- Query input box
+- Insight cards display
+- Trend visualizations
+- Action recommendations
+
+### Task 8.4: Automated Insights
+Implement daily insights:
+- Retention predictions
+- Revenue forecasting
+- Attendance patterns
+- Optimization suggestions
+
+**🛑 STOP HERE - COMMIT PHASE 8**
+```bash
+git add .
+git commit -m "feat: Google Gemini AI integration for advanced analytics"
+git push origin develop
+```
+
+**⏸️ BREAK TIME: 1 hour**
+- Test AI queries
+- Verify insight accuracy
+- Check performance impact
+- Review generated recommendations
+
+---
+
+## 📋 Phase 9: Performance & Polish (Day 10)
+**Estimated Time: 6-7 hours**
+
+### Task 9.1: Performance Optimization
+Optimize application:
+- Database query optimization
+- API response caching
+- Image optimization
+- Bundle size reduction
+
+### Task 9.2: UI/UX Polish
+Enhance user interface:
+- Loading animations
+- Error state handling
+- Empty state designs
+- Micro-interactions
+
+### Task 9.3: Offline Capabilities
+Implement offline features:
+- Local data storage
+- Sync queue management
+- Conflict resolution
+- Network status handling
+
+### Task 9.4: Security Hardening
+Enhance security:
+- Input validation
+- Rate limiting
+- API security headers
+- Data encryption
+
+**🛑 STOP HERE - COMMIT PHASE 9**
+```bash
+git add .
+git commit -m "feat: performance optimization and security enhancements"
+git push origin develop
+```
+
+**⏸️ BREAK TIME: 1 hour**
+- Run performance tests
+- Check security headers
+- Test offline functionality
+- Verify all optimizations
+
+---
+
+## 📋 Phase 10: Testing & Bug Fixes (Day 11-12)
+**Estimated Time: 8-10 hours**
+
+### Task 10.1: Unit Testing
+Write unit tests for:
+- Authentication logic
+- Payment calculations
+- Attendance algorithms
+- Utility functions
+
+### Task 10.2: Integration Testing
+Test integrations:
+- API endpoint testing
+- Database operations
+- External service mocks
+- Error scenarios
+
+### Task 10.3: E2E Testing
+Create E2E tests:
+- Complete user flows
+- Registration to payment
+- Attendance marking flow
+- Report generation
+
+### Task 10.4: Bug Fixes
+Fix identified issues:
+- Review bug list from breaks
+- Fix critical bugs first
+- UI/UX improvements
+- Performance issues
+
+**🛑 STOP HERE - COMMIT PHASE 10**
+```bash
+git add .
+git commit -m "test: comprehensive testing suite and bug fixes"
+git push origin develop
+```
+
+---
+
+## 📋 Phase 11: Deployment Preparation (Day 13)
+**Estimated Time: 4-5 hours**
+
+### Task 11.1: Environment Setup
+Prepare deployment:
+- Production environment variables
+- Database migrations
+- SSL certificates
+- Domain configuration
+
+### Task 11.2: CI/CD Pipeline
+Setup automation:
+- GitHub Actions workflow
+- Automated testing
+- Build processes
+- Deployment scripts
+
+### Task 11.3: Monitoring Setup
+Configure monitoring:
+- Error tracking (Sentry)
+- Performance monitoring
+- Uptime monitoring
+- Log aggregation
+
+### Task 11.4: Documentation
+Complete documentation:
+- API documentation
+- User guides
+- Deployment guide
+- Troubleshooting guide
+
+**🛑 STOP HERE - FINAL COMMIT**
+```bash
+git add .
+git commit -m "docs: complete documentation and deployment setup"
+git push origin develop
+git checkout main
+git merge develop
+git push origin main
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+---
+
+## 🚀 Post-Development Tasks
+
+### Final Review Checklist
+- [ ] All features working end-to-end
+- [ ] Payment gateway in production mode
+- [ ] WhatsApp templates approved
+- [ ] Security audit completed
+- [ ] Performance benchmarks met
+- [ ] Documentation complete
+- [ ] Backup strategy in place
+- [ ] Monitoring active
+
+### Deployment Steps
+1. Deploy backend to VPS/Cloud
+2. Deploy web app to Vercel/Netlify
+3. Build and publish mobile apps
+4. Configure production domains
+5. Setup SSL certificates
+6. Initialize production database
+7. Create admin users
+8. Run final tests
+
+### Handover Package
+- Source code repository
+- Documentation wiki
+- Admin credentials
+- API keys (secured)
+- Deployment guide
+- Support contact info
+
+---
+
+## 🎯 Development Best Practices
+
+### For Each Phase:
+1. **Start Fresh**: Clear your context before each phase
+2. **Read Previous Code**: Understand what was built before
+3. **Small Changes**: Make incremental changes
+4. **Test Immediately**: Verify each feature works
+5. **Commit Often**: Save progress frequently
+6. **Document Changes**: Update README as you go
+
+### Avoiding Common Pitfalls:
+- Don't try to build everything at once
+- Don't skip the break times
+- Don't forget to test after each phase
+- Don't ignore error handling
+- Don't overcomplicate early phases
+- Don't forget to commit your work
+
+### When Stuck:
+1. Take a break and review the requirements
+2. Check if previous phases are working correctly
+3. Simplify the current task
+4. Ask for specific help on the stuck part
+5. Move to next task and return later
+
+---
+
+## 📊 Success Metrics
+
+### Development Metrics:
+- Each phase completed within estimated time
+- Less than 5 critical bugs per phase
+- All tests passing before moving forward
+- Clean git history with meaningful commits
+
+### Application Metrics:
+- Page load time < 3 seconds
+- API response time < 500ms
+- 99.9% uptime target
+- Mobile app size < 50MB
+- Crash rate < 0.1%
+
+---
+
+## 🎓 Final Notes
+
+This phased approach ensures:
+1. **Manageable Chunks**: AI won't get overwhelmed
+2. **Progressive Building**: Each phase builds on previous
+3. **Regular Testing**: Bugs caught early
+4. **Clean Codebase**: Organized and maintainable
+5. **Complete System**: All features properly integrated
+
+Remember: Quality over speed. Take breaks. Test thoroughly. Commit often.
