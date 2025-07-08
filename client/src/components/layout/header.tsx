@@ -2,9 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Menu, Settings, Moon, Sun } from "lucide-react";
 import { useState, useEffect } from "react";
 
-export function Header() {
+interface HeaderProps {
+  onMenuClick: () => void;
+}
+
+export function Header({ onMenuClick }: HeaderProps) {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Check if user prefers dark mode
@@ -33,11 +36,7 @@ export function Header() {
   };
 
   const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-    const sidebar = document.querySelector('aside');
-    if (sidebar) {
-      sidebar.classList.toggle('-translate-x-full');
-    }
+    onMenuClick();
   };
 
   return (

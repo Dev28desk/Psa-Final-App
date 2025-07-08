@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -19,11 +20,23 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 
 function Router() {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 dark:from-gray-900 dark:to-blue-900/30">
-      <Sidebar />
-      <div className="flex-1 flex flex-col lg:ml-64">
-        <Header />
+      <Sidebar 
+        isCollapsed={isSidebarCollapsed}
+        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        isMobileOpen={isMobileMenuOpen}
+        onMobileToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+      />
+      <div 
+        className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${
+          isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+        }`}
+      >
+        <Header onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
         <main className="flex-1 overflow-y-auto">
           <div className="min-h-full p-4 lg:p-0">
             <Switch>

@@ -50,7 +50,7 @@ export function FeeStatus({ status, amount, dueDate, studentName }: FeeStatusPro
       <CardContent>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-2xl font-bold">₹{amount.toLocaleString()}</p>
+            <p className="text-2xl font-bold">₹{amount ? amount.toLocaleString() : '0'}</p>
             <p className="text-sm text-gray-500">Due: {dueDate}</p>
           </div>
           <Badge className={config.color}>
