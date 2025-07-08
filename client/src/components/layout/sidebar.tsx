@@ -48,6 +48,7 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileToggle }:
     { name: "Coaches", href: "/coaches", icon: Users },
     { name: "Communications", href: "/communications", icon: MessageSquare },
     { name: "Reports", href: "/reports", icon: BarChart3 },
+    { name: "AI Insights", href: "/ai-insights", icon: Brain },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 
