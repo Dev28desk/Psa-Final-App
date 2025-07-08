@@ -23,7 +23,11 @@ import {
   Edit3,
   Trash2,
   Upload,
-  Key
+  Key,
+  Megaphone,
+  BarChart3,
+  Brain,
+  MapPin
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -156,6 +160,34 @@ export default function SettingsPage() {
             <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="hidden sm:inline">Security</span>
             <span className="sm:hidden">Sec</span>
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 h-auto mt-4">
+          <TabsTrigger value="campaigns" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Megaphone className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Campaigns</span>
+            <span className="sm:hidden">Cam</span>
+          </TabsTrigger>
+          <TabsTrigger value="advanced-reports" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Advanced Reports</span>
+            <span className="sm:hidden">Adv</span>
+          </TabsTrigger>
+          <TabsTrigger value="ai-insights" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Brain className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">AI Insights</span>
+            <span className="sm:hidden">AI</span>
+          </TabsTrigger>
+          <TabsTrigger value="users" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Users</span>
+            <span className="sm:hidden">Usr</span>
+          </TabsTrigger>
+          <TabsTrigger value="gps-tracking" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">GPS Tracking</span>
+            <span className="sm:hidden">GPS</span>
           </TabsTrigger>
         </TabsList>
 
@@ -665,6 +697,101 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
+        <TabsContent value="campaigns" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Campaigns</CardTitle>
+              <CardDescription>Manage your WhatsApp campaigns and automated messages</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Button onClick={() => window.location.href = '/campaigns'} className="mb-4">
+                  Go to Campaigns
+                </Button>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Create and manage automated WhatsApp campaigns for fee reminders, welcome messages, and more.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="advanced-reports" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Advanced Reports</CardTitle>
+              <CardDescription>Custom report builder with advanced analytics</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Button onClick={() => window.location.href = '/advanced-reports'} className="mb-4">
+                  Go to Advanced Reports
+                </Button>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Create custom reports with advanced filters and data visualization.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="ai-insights" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>AI Insights</CardTitle>
+              <CardDescription>Artificial intelligence powered analytics and insights</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Button onClick={() => window.location.href = '/ai-insights'} className="mb-4">
+                  Go to AI Insights
+                </Button>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  View AI-powered insights about student performance, revenue trends, and attendance patterns.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="users" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>User Management</CardTitle>
+              <CardDescription>Manage user accounts and permissions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Button onClick={() => window.location.href = '/user-management'} className="mb-4">
+                  Go to User Management
+                </Button>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Create and manage user accounts with role-based permissions.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="gps-tracking" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>GPS Tracking</CardTitle>
+              <CardDescription>Real-time location tracking and geofencing</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Button onClick={() => window.location.href = '/gps-tracking'} className="mb-4">
+                  Go to GPS Tracking
+                </Button>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Monitor coach locations in real-time with geofencing capabilities.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
       </Tabs>
     </div>
   );

@@ -47,12 +47,7 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileToggle }:
     { name: "Batches", href: "/batches", icon: UserCheck },
     { name: "Coaches", href: "/coaches", icon: Users },
     { name: "Communications", href: "/communications", icon: MessageSquare },
-    { name: "Campaigns", href: "/campaigns", icon: Megaphone },
     { name: "Reports", href: "/reports", icon: BarChart3 },
-    { name: "Advanced Reports", href: "/advanced-reports", icon: Brain },
-    { name: "AI Insights", href: "/ai-insights", icon: BarChart3 },
-    { name: "Users", href: "/user-management", icon: Shield },
-    { name: "GPS Tracking", href: "/gps-tracking", icon: MapPin },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 
