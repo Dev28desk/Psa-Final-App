@@ -20,12 +20,12 @@ import { Header } from "@/components/layout/header";
 
 function Router() {
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
+    <div className="flex h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 dark:from-gray-900 dark:to-blue-900/30">
       <Sidebar />
       <div className="flex-1 flex flex-col lg:ml-64">
         <Header />
         <main className="flex-1 overflow-y-auto">
-          <div className="min-h-full">
+          <div className="min-h-full p-4 lg:p-0">
             <Switch>
               <Route path="/" component={Dashboard} />
               <Route path="/students" component={Students} />

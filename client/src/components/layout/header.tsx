@@ -1,47 +1,83 @@
-import { Search, Bell, Settings, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Menu, Settings, Moon, Sun } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export function Header() {
-  return (
-    <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 px-6 py-4 sticky top-0 z-40">
-      <div className="flex items-center justify-between">
-        {/* Search */}
-        <div className="flex-1 max-w-md">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search students, coaches, payments..."
-              className="pl-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-            />
-          </div>
-        </div>
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-        {/* Actions */}
-        <div className="flex items-center space-x-3">
-          <Button variant="ghost" size="icon" className="relative hover:bg-gray-100">
-            <Bell className="h-5 w-5 text-gray-600" />
-            <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-accent text-white text-xs">
-              3
-            </Badge>
+  useEffect(() => {
+    // Check if user prefers dark mode
+    const darkMode = localStorage.getItem('theme') === 'dark' || 
+      (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    setIsDarkMode(darkMode);
+    
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    
+    if (newMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+    const sidebar = document.querySelector('aside');
+    if (sidebar) {
+      sidebar.classList.toggle('-translate-x-full');
+    }
+  };
+
+  return (
+    <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleMobileMenu}
+            className="lg:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 hidden sm:block">
+            Parmanand Sports Academy
+          </h2>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleDarkMode}
+            className="h-9 w-9"
+          >
+            {isDarkMode ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
           </Button>
           
-          <Button variant="ghost" size="icon" className="hover:bg-gray-100">
-            <Settings className="h-5 w-5 text-gray-600" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9"
+          >
+            <Settings className="h-4 w-4" />
           </Button>
-          
-          <div className="flex items-center space-x-3 pl-3 border-l border-gray-200">
-            <Avatar className="h-9 w-9 ring-2 ring-gray-100">
-              <AvatarImage src="/api/placeholder/32/32" alt="Admin" />
-              <AvatarFallback className="bg-primary text-white font-medium">AD</AvatarFallback>
-            </Avatar>
-            <div className="hidden sm:block">
-              <p className="text-sm font-medium text-gray-900">Admin</p>
-              <p className="text-xs text-gray-500">Super Admin</p>
-            </div>
-          </div>
         </div>
       </div>
     </header>

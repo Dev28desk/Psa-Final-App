@@ -97,37 +97,43 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Settings</h1>
-        <p className="text-gray-600">Manage your academy's configuration and preferences</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Settings</h1>
+        <p className="text-gray-600 dark:text-gray-400">Manage your academy's configuration and preferences</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="general" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            General
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 h-auto">
+          <TabsTrigger value="general" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">General</span>
+            <span className="sm:hidden">Gen</span>
           </TabsTrigger>
-          <TabsTrigger value="payments" className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4" />
-            Payments
+          <TabsTrigger value="payments" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <CreditCard className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Payments</span>
+            <span className="sm:hidden">Pay</span>
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
-            <Bell className="h-4 w-4" />
-            Notifications
+          <TabsTrigger value="notifications" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Bell className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Notifications</span>
+            <span className="sm:hidden">Not</span>
           </TabsTrigger>
-          <TabsTrigger value="appearance" className="flex items-center gap-2">
-            <Palette className="h-4 w-4" />
-            Appearance
+          <TabsTrigger value="appearance" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Palette className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Appearance</span>
+            <span className="sm:hidden">App</span>
           </TabsTrigger>
-          <TabsTrigger value="icons" className="flex items-center gap-2">
-            <Eye className="h-4 w-4" />
-            Icons
+          <TabsTrigger value="icons" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Icons</span>
+            <span className="sm:hidden">Ico</span>
           </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            Security
+          <TabsTrigger value="security" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Security</span>
+            <span className="sm:hidden">Sec</span>
           </TabsTrigger>
         </TabsList>
 
@@ -138,13 +144,14 @@ export default function SettingsPage() {
               <CardDescription>Basic information about your sports academy</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="academy-name">Academy Name</Label>
                   <Input 
                     id="academy-name" 
                     defaultValue={settings?.academy_name || "Parmanand Sports Academy"}
                     onBlur={(e) => handleSettingChange('academy_name', e.target.value)}
+                    className="text-base"
                   />
                 </div>
                 <div>
@@ -154,16 +161,18 @@ export default function SettingsPage() {
                     type="email"
                     defaultValue={settings?.academy_email || ""}
                     onBlur={(e) => handleSettingChange('academy_email', e.target.value)}
+                    className="text-base"
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="academy-phone">Contact Phone</Label>
                   <Input 
                     id="academy-phone" 
                     defaultValue={settings?.academy_phone || ""}
                     onBlur={(e) => handleSettingChange('academy_phone', e.target.value)}
+                    className="text-base"
                   />
                 </div>
                 <div>
@@ -172,6 +181,7 @@ export default function SettingsPage() {
                     id="academy-address" 
                     defaultValue={settings?.academy_address || ""}
                     onBlur={(e) => handleSettingChange('academy_address', e.target.value)}
+                    className="text-base"
                   />
                 </div>
               </div>

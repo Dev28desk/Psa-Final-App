@@ -30,16 +30,16 @@ export function Sidebar() {
   const [location] = useLocation();
 
   return (
-    <aside className="w-64 bg-white shadow-xl border-r border-gray-200 h-screen fixed left-0 top-0 overflow-y-auto z-50 lg:translate-x-0">
+    <aside className="w-64 bg-white dark:bg-gray-800 shadow-xl border-r border-gray-200 dark:border-gray-700 h-screen fixed left-0 top-0 overflow-y-auto z-50 -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
       {/* Logo */}
-      <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-primary to-accent">
+      <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-primary to-accent">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-            <Trophy className="w-7 h-7 text-white" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+            <Trophy className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white">Parmanand</h1>
-            <p className="text-sm text-white/80">Sports Academy</p>
+            <h1 className="text-lg sm:text-xl font-bold text-white">Parmanand</h1>
+            <p className="text-xs sm:text-sm text-white/80">Sports Academy</p>
           </div>
         </div>
       </div>
@@ -54,15 +54,15 @@ export function Sidebar() {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-gray-50 group relative",
+                  "flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-700 group relative",
                   isActive 
                     ? "bg-gradient-to-r from-primary/10 to-accent/10 text-primary border-l-4 border-primary shadow-sm" 
-                    : "text-gray-700 hover:text-primary"
+                    : "text-gray-700 dark:text-gray-300 hover:text-primary"
                 )}
               >
                 <item.icon className={cn(
                   "w-5 h-5 transition-colors",
-                  isActive ? "text-primary" : "text-gray-500 group-hover:text-primary"
+                  isActive ? "text-primary" : "text-gray-500 dark:text-gray-400 group-hover:text-primary"
                 )} />
                 <span className="flex-1">{item.name}</span>
                 {item.badge && (

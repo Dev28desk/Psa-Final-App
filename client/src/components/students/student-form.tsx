@@ -209,19 +209,21 @@ export function StudentForm({ onSuccess, sports, batches }: StudentFormProps) {
           {...register("address")}
           placeholder="Enter complete address"
           rows={3}
+          className="text-base"
         />
       </div>
 
       {/* Emergency Contact */}
       <div className="space-y-4">
-        <h3 className="font-medium text-gray-900">Emergency Contact</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <h3 className="font-medium text-gray-900 dark:text-gray-100">Emergency Contact</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="emergencyName">Name *</Label>
             <Input
               id="emergencyName"
               {...register("emergencyContact.name")}
               placeholder="Emergency contact name"
+              className="text-base"
             />
             {errors.emergencyContact?.name && (
               <p className="text-sm text-destructive mt-1">
@@ -236,6 +238,7 @@ export function StudentForm({ onSuccess, sports, batches }: StudentFormProps) {
               id="emergencyPhone"
               {...register("emergencyContact.phone")}
               placeholder="Emergency contact phone"
+              className="text-base"
             />
             {errors.emergencyContact?.phone && (
               <p className="text-sm text-destructive mt-1">
@@ -250,6 +253,7 @@ export function StudentForm({ onSuccess, sports, batches }: StudentFormProps) {
               id="emergencyRelation"
               {...register("emergencyContact.relation")}
               placeholder="Relation (e.g., Father, Mother)"
+              className="text-base"
             />
             {errors.emergencyContact?.relation && (
               <p className="text-sm text-destructive mt-1">
@@ -267,33 +271,71 @@ export function StudentForm({ onSuccess, sports, batches }: StudentFormProps) {
           {...register("medicalNotes")}
           placeholder="Any medical conditions or notes"
           rows={3}
+          className="text-base"
         />
       </div>
 
       {/* Registration Fee Notice */}
       <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h4 className="font-semibold text-blue-900 dark:text-blue-100">Registration Fee</h4>
             <p className="text-sm text-blue-700 dark:text-blue-300">
               One-time registration fee required for new students
             </p>
           </div>
-          <div className="text-right">
+          <div className="text-right sm:text-left">
             <span className="text-2xl font-bold text-blue-900 dark:text-blue-100">₹300</span>
             <p className="text-xs text-blue-600 dark:text-blue-400">One-time payment</p>
           </div>
         </div>
+        
+        {/* Payment Buttons */}
+        <div className="flex flex-col sm:flex-row gap-2 mt-4">
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="flex-1 bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+            onClick={() => {
+              // Handle COD payment
+              toast({
+                title: "COD Payment",
+                description: "Cash on delivery payment selected",
+              });
+            }}
+          >
+            💰 COD Payment
+          </Button>
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+            onClick={() => {
+              // Handle online payment
+              toast({
+                title: "Online Payment",
+                description: "Redirecting to payment gateway...",
+              });
+            }}
+          >
+            💳 Online Payment
+          </Button>
+        </div>
       </div>
 
-      <div className="flex justify-end space-x-3">
-        <Button type="button" variant="outline" onClick={onSuccess}>
+      <div className="flex flex-col sm:flex-row gap-3 pt-4">
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onSuccess}
+          className="flex-1 sm:flex-none"
+        >
           Cancel
         </Button>
         <Button 
           type="submit" 
           disabled={createStudentMutation.isPending}
-          className="bg-primary hover:bg-primary/90"
+          className="flex-1 sm:flex-none bg-primary hover:bg-primary/90"
         >
           {createStudentMutation.isPending ? "Adding..." : "Add Student"}
         </Button>
