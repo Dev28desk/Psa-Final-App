@@ -6,7 +6,8 @@ import { SportsChart } from "@/components/dashboard/sports-chart";
 import { RecentActivities } from "@/components/dashboard/recent-activities";
 import { AIInsightsPanel } from "@/components/dashboard/ai-insights-panel";
 import { Button } from "@/components/ui/button";
-import { UserPlus, Banknote, Calendar, FileText } from "lucide-react";
+import { UserPlus, Banknote, Calendar, FileText, Users, Grid3X3 } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Dashboard() {
   useRealtime();
@@ -32,81 +33,99 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-8 max-w-7xl mx-auto">
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Dashboard Overview</h1>
-        <p className="text-gray-600">Welcome back! Here's what's happening at your academy today.</p>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard Overview</h1>
+            <p className="text-gray-600">Welcome back! Here's what's happening at your academy today.</p>
+          </div>
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button variant="outline" size="sm" className="hover:bg-gray-50">
+              <FileText className="h-4 w-4 mr-2" />
+              Export Report
+            </Button>
+            <Button size="sm" className="bg-primary hover:bg-primary/90">
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add Student
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <Link href="/students">
+            <Button 
+              variant="outline" 
+              className="h-20 w-full flex flex-col items-center justify-center space-y-2 hover:bg-primary hover:text-white transition-all duration-200 hover:shadow-md"
+            >
+              <UserPlus className="h-6 w-6" />
+              <span className="text-xs font-medium">Add Student</span>
+            </Button>
+          </Link>
+          <Link href="/fees">
+            <Button 
+              variant="outline" 
+              className="h-20 w-full flex flex-col items-center justify-center space-y-2 hover:bg-green-600 hover:text-white transition-all duration-200 hover:shadow-md"
+            >
+              <Banknote className="h-6 w-6" />
+              <span className="text-xs font-medium">Collect Fee</span>
+            </Button>
+          </Link>
+          <Link href="/attendance">
+            <Button 
+              variant="outline" 
+              className="h-20 w-full flex flex-col items-center justify-center space-y-2 hover:bg-blue-600 hover:text-white transition-all duration-200 hover:shadow-md"
+            >
+              <Calendar className="h-6 w-6" />
+              <span className="text-xs font-medium">Mark Attendance</span>
+            </Button>
+          </Link>
+          <Link href="/reports">
+            <Button 
+              variant="outline" 
+              className="h-20 w-full flex flex-col items-center justify-center space-y-2 hover:bg-purple-600 hover:text-white transition-all duration-200 hover:shadow-md"
+            >
+              <FileText className="h-6 w-6" />
+              <span className="text-xs font-medium">Generate Report</span>
+            </Button>
+          </Link>
+          <Link href="/students">
+            <Button 
+              variant="outline" 
+              className="h-20 w-full flex flex-col items-center justify-center space-y-2 hover:bg-orange-600 hover:text-white transition-all duration-200 hover:shadow-md"
+            >
+              <Users className="h-6 w-6" />
+              <span className="text-xs font-medium">View Students</span>
+            </Button>
+          </Link>
+          <Button 
+            variant="outline" 
+            className="h-20 w-full flex flex-col items-center justify-center space-y-2 hover:bg-indigo-600 hover:text-white transition-all duration-200 hover:shadow-md"
+          >
+            <Grid3X3 className="h-6 w-6" />
+            <span className="text-xs font-medium">Manage Batches</span>
+          </Button>
+        </div>
       </div>
 
       {/* Metrics Cards */}
       <MetricsCards stats={stats} />
 
       {/* Analytics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="xl:col-span-2 space-y-6">
           <RevenueChart />
-        </div>
-        <div>
           <SportsChart sportsDistribution={stats?.sportsDistribution || []} />
         </div>
-      </div>
-
-      {/* Recent Activities & AI Insights */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RecentActivities activities={stats?.recentActivities || []} />
-        <AIInsightsPanel />
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Button className="quick-action justify-start h-auto py-4" variant="outline">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-50 rounded-full">
-              <UserPlus className="h-5 w-5 text-primary" />
-            </div>
-            <div className="text-left">
-              <p className="font-medium text-gray-900">Add Student</p>
-              <p className="text-sm text-gray-500">Enroll new student</p>
-            </div>
-          </div>
-        </Button>
-        
-        <Button className="quick-action justify-start h-auto py-4" variant="outline">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-green-50 rounded-full">
-              <Banknote className="h-5 w-5 text-green-600" />
-            </div>
-            <div className="text-left">
-              <p className="font-medium text-gray-900">Record Payment</p>
-              <p className="text-sm text-gray-500">Quick fee collection</p>
-            </div>
-          </div>
-        </Button>
-        
-        <Button className="quick-action justify-start h-auto py-4" variant="outline">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-orange-50 rounded-full">
-              <Calendar className="h-5 w-5 text-accent" />
-            </div>
-            <div className="text-left">
-              <p className="font-medium text-gray-900">Mark Attendance</p>
-              <p className="text-sm text-gray-500">Today's attendance</p>
-            </div>
-          </div>
-        </Button>
-        
-        <Button className="quick-action justify-start h-auto py-4" variant="outline">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-purple-50 rounded-full">
-              <FileText className="h-5 w-5 text-purple-600" />
-            </div>
-            <div className="text-left">
-              <p className="font-medium text-gray-900">Generate Report</p>
-              <p className="text-sm text-gray-500">Custom reports</p>
-            </div>
-          </div>
-        </Button>
+        <div className="space-y-6">
+          <RecentActivities activities={stats?.recentActivities || []} />
+          <AIInsightsPanel />
+        </div>
       </div>
     </div>
   );

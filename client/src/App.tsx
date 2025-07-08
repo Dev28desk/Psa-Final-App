@@ -15,20 +15,22 @@ import { Header } from "@/components/layout/header";
 
 function Router() {
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
       <Sidebar />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col lg:ml-64">
         <Header />
         <main className="flex-1 overflow-y-auto">
-          <Switch>
-            <Route path="/" component={Dashboard} />
-            <Route path="/students" component={Students} />
-            <Route path="/fees" component={Fees} />
-            <Route path="/attendance" component={Attendance} />
-            <Route path="/reports" component={Reports} />
-            <Route path="/ai-insights" component={AIInsights} />
-            <Route component={NotFound} />
-          </Switch>
+          <div className="min-h-full">
+            <Switch>
+              <Route path="/" component={Dashboard} />
+              <Route path="/students" component={Students} />
+              <Route path="/fees" component={Fees} />
+              <Route path="/attendance" component={Attendance} />
+              <Route path="/reports" component={Reports} />
+              <Route path="/ai-insights" component={AIInsights} />
+              <Route component={NotFound} />
+            </Switch>
+          </div>
         </main>
       </div>
     </div>
