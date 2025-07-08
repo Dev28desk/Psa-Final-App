@@ -32,7 +32,15 @@ type StudentFormData = z.infer<typeof studentFormSchema>;
 interface StudentFormProps {
   onSuccess: () => void;
   sports: Array<{ id: number; name: string }>;
-  batches: Array<{ id: number; name: string; sportId: number }>;
+  batches: Array<{ 
+    id: number; 
+    name: string; 
+    sportId: number; 
+    schedule: { 
+      days: string[]; 
+      time: string; 
+    }; 
+  }>;
 }
 
 export function StudentForm({ onSuccess, sports, batches }: StudentFormProps) {
@@ -168,7 +176,7 @@ export function StudentForm({ onSuccess, sports, batches }: StudentFormProps) {
             <option value="">Select a batch</option>
             {filteredBatches.map((batch) => (
               <option key={batch.id} value={batch.id}>
-                {batch.name}
+                {batch.schedule.time} - {batch.name}
               </option>
             ))}
           </select>

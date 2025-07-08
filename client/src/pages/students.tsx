@@ -97,7 +97,7 @@ export default function Students() {
               <option value="">All Batches</option>
               {batches?.map((batch: any) => (
                 <option key={batch.id} value={batch.id}>
-                  {batch.name}
+                  {batch.schedule?.time} - {batch.name}
                 </option>
               ))}
             </select>
