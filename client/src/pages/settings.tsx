@@ -22,8 +22,11 @@ import {
   Plus,
   Edit3,
   Trash2,
-  Upload
+  Upload,
+  Key
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -83,6 +86,25 @@ export default function SettingsPage() {
 
   const handleSettingChange = (key: string, value: any) => {
     updateSettingMutation.mutate({ key, value });
+  };
+
+  const applyTheme = (theme: string) => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else if (theme === 'light') {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    } else {
+      // System theme
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (prefersDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      localStorage.setItem('theme', 'system');
+    }
   };
 
   if (isLoading) {
@@ -427,19 +449,112 @@ export default function SettingsPage() {
               <CardTitle>Theme & Appearance</CardTitle>
               <CardDescription>Customize the look and feel of your admin panel</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
-                  <div className="w-full h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded mb-3"></div>
-                  <p className="text-sm font-medium">Default Theme</p>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="theme">Theme</Label>
+                <Select 
+                  defaultValue={settings?.theme || "system"}
+                  onValueChange={(value) => {
+                    handleSettingChange('theme', value);
+                    applyTheme(value);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select theme" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="light">Light</SelectItem>
+                    <SelectItem value="dark">Dark</SelectItem>
+                    <SelectItem value="system">System</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="accent-color">Accent Color</Label>
+                <Select 
+                  defaultValue={settings?.accent_color || "blue"}
+                  onValueChange={(value) => handleSettingChange('accent_color', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select accent color" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="blue">Blue</SelectItem>
+                    <SelectItem value="green">Green</SelectItem>
+                    <SelectItem value="purple">Purple</SelectItem>
+                    <SelectItem value="orange">Orange</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="compact-mode">Compact Mode</Label>
+                <Switch
+                  id="compact-mode"
+                  checked={settings?.compact_mode || false}
+                  onCheckedChange={(checked) => handleSettingChange('compact_mode', checked)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="sidebar-collapsed">Sidebar Collapsed by Default</Label>
+                <Switch
+                  id="sidebar-collapsed"
+                  checked={settings?.sidebar_collapsed || false}
+                  onCheckedChange={(checked) => handleSettingChange('sidebar_collapsed', checked)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="api-keys" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>API Keys Management</CardTitle>
+              <CardDescription>Configure API keys for external services</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="font-semibold">Gemini AI API Key</h3>
+                      <p className="text-sm text-gray-500">Used for AI insights and analytics</p>
+                    </div>
+                    <Badge variant="secondary">Active</Badge>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="gemini-key">API Key</Label>
+                    <Input 
+                      id="gemini-key" 
+                      type="password"
+                      placeholder="Enter your Gemini API key"
+                      value={settings?.gemini_api_key || ''}
+                      onChange={(e) => handleSettingChange('gemini_api_key', e.target.value)}
+                    />
+                  </div>
                 </div>
-                <div className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
-                  <div className="w-full h-20 bg-gradient-to-r from-green-500 to-blue-600 rounded mb-3"></div>
-                  <p className="text-sm font-medium">Sports Theme</p>
-                </div>
-                <div className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
-                  <div className="w-full h-20 bg-gradient-to-r from-orange-500 to-red-600 rounded mb-3"></div>
-                  <p className="text-sm font-medium">Energetic Theme</p>
+                
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="font-semibold">WhatsApp Business API</h3>
+                      <p className="text-sm text-gray-500">For sending notifications and alerts</p>
+                    </div>
+                    <Badge variant="outline">Inactive</Badge>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="whatsapp-token">Access Token</Label>
+                    <Input 
+                      id="whatsapp-token" 
+                      type="password"
+                      placeholder="Enter WhatsApp Business API token"
+                      value={settings?.whatsapp_token || ''}
+                      onChange={(e) => handleSettingChange('whatsapp_token', e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -451,18 +566,33 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 Icon Management
-                <Button size="sm">
+                <Button size="sm" onClick={() => document.getElementById('icon-upload')?.click()}>
                   <Plus className="h-4 w-4 mr-2" />
                   Upload Icon
                 </Button>
+                <input
+                  id="icon-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      toast({
+                        title: "Icon Upload",
+                        description: "Icon upload functionality will be implemented",
+                      });
+                    }
+                  }}
+                />
               </CardTitle>
               <CardDescription>Customize icons used throughout the system</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-8 gap-4">
                 {icons?.map((icon: any) => (
-                  <div key={icon.id} className="border rounded-lg p-3 text-center hover:bg-gray-50">
-                    <div className="w-8 h-8 mx-auto mb-2 bg-gray-200 rounded flex items-center justify-center">
+                  <div key={icon.id} className="border rounded-lg p-3 text-center hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <div className="w-8 h-8 mx-auto mb-2 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
                       <Zap className="h-4 w-4" />
                     </div>
                     <p className="text-xs font-medium">{icon.name}</p>
@@ -476,6 +606,11 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 ))}
+                {icons?.length === 0 && (
+                  <div className="col-span-8 text-center py-8 text-gray-500">
+                    No custom icons uploaded yet
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

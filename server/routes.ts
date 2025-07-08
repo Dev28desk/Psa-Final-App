@@ -648,5 +648,136 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Insights routes
+  app.get("/api/ai-insights/student-analysis", async (req, res) => {
+    try {
+      const { generateStudentInsights } = await import("./ai-insights");
+      const insights = await generateStudentInsights();
+      res.json(insights);
+    } catch (error: any) {
+      console.error("Student insights error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/ai-insights/revenue-analysis", async (req, res) => {
+    try {
+      const { generateRevenueAnalysis } = await import("./ai-insights");
+      const analysis = await generateRevenueAnalysis();
+      res.json(analysis);
+    } catch (error: any) {
+      console.error("Revenue analysis error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/ai-insights/attendance-insights", async (req, res) => {
+    try {
+      const { generateAttendanceInsights } = await import("./ai-insights");
+      const insights = await generateAttendanceInsights();
+      res.json(insights);
+    } catch (error: any) {
+      console.error("Attendance insights error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // WhatsApp notification routes
+  app.post("/api/notifications/fee-reminder", async (req, res) => {
+    try {
+      const { sendFeeReminder } = await import("./notifications");
+      const { studentId, amount, dueDate } = req.body;
+      const result = await sendFeeReminder(studentId, amount, dueDate);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Fee reminder error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/notifications/payment-confirmation", async (req, res) => {
+    try {
+      const { sendPaymentConfirmation } = await import("./notifications");
+      const { studentId, amount, paymentMethod } = req.body;
+      const result = await sendPaymentConfirmation(studentId, amount, paymentMethod);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Payment confirmation error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/notifications/bulk-notification", async (req, res) => {
+    try {
+      const { sendBulkNotification } = await import("./notifications");
+      const { recipients, message } = req.body;
+      const result = await sendBulkNotification(recipients, message);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Bulk notification error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Enhanced pending payments route
+  app.get("/api/payments/pending-grouped", async (req, res) => {
+    try {
+      const pendingPayments = await storage.getPendingPayments();
+      
+      // Group by sport and batch
+      const grouped = pendingPayments.reduce((acc: any, payment: any) => {
+        const sportName = payment.student?.batch?.sport?.name || 'Unknown Sport';
+        const batchName = payment.student?.batch?.name || 'Unknown Batch';
+        
+        if (!acc[sportName]) {
+          acc[sportName] = {};
+        }
+        if (!acc[sportName][batchName]) {
+          acc[sportName][batchName] = [];
+        }
+        
+        acc[sportName][batchName].push(payment);
+        return acc;
+      }, {});
+
+      res.json(grouped);
+    } catch (error: any) {
+      console.error("Grouped pending payments error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Reports generation routes
+  app.get("/api/reports/generate/:type", async (req, res) => {
+    try {
+      const { type } = req.params;
+      const { startDate, endDate, ...filters } = req.query;
+
+      let report;
+      switch (type) {
+        case 'student':
+          report = await storage.getStudentReport(filters);
+          break;
+        case 'revenue':
+          report = await storage.getMonthlyRevenueReport(parseInt(filters.year as string) || new Date().getFullYear());
+          break;
+        case 'attendance':
+          report = await storage.getAttendanceReport(
+            new Date(startDate as string),
+            new Date(endDate as string),
+            filters.batchId ? parseInt(filters.batchId as string) : undefined
+          );
+          break;
+        default:
+          return res.status(400).json({ error: "Invalid report type" });
+      }
+
+      res.json(report);
+    } catch (error: any) {
+      console.error("Report generation error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }

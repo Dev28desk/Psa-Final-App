@@ -18,7 +18,11 @@ import {
   TrendingUp, 
   AlertTriangle,
   Clock,
-  CheckCircle
+  CheckCircle,
+  Trophy,
+  Users,
+  MessageSquare,
+  AlertCircle
 } from "lucide-react";
 
 export default function Fees() {
@@ -38,6 +42,10 @@ export default function Fees() {
 
   const { data: pendingPayments } = useQuery({
     queryKey: ['/api/payments/pending'],
+  });
+
+  const { data: groupedPendingPayments } = useQuery({
+    queryKey: ['/api/payments/pending-grouped'],
   });
 
   const { data: students } = useQuery({
@@ -294,28 +302,50 @@ export default function Fees() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5" />
-                  Pending Payments
+                  Pending Payments by Sport & Batch
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {pendingPayments && pendingPayments.length > 0 ? (
-                  <div className="space-y-4">
-                    {pendingPayments.map((payment: any) => (
-                      <div key={payment.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                        <div>
-                          <p className="font-medium text-gray-900 dark:text-gray-100">{payment.student?.name}</p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {payment.monthYear} • ₹{payment.amount}
-                          </p>
+                {groupedPendingPayments && Object.keys(groupedPendingPayments).length > 0 ? (
+                  <div className="space-y-6">
+                    {Object.entries(groupedPendingPayments).map(([sport, batches]) => (
+                      <div key={sport} className="space-y-4">
+                        <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                          <Trophy className="h-5 w-5 text-blue-600" />
+                          <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">{sport}</h3>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className="status-pending">
-                            {payment.daysOverdue} days overdue
-                          </Badge>
-                          <Button size="sm" onClick={() => setIsPaymentDialogOpen(true)}>
-                            Collect
-                          </Button>
-                        </div>
+                        {Object.entries(batches as any).map(([batch, payments]) => (
+                          <div key={batch} className="ml-4 space-y-2">
+                            <div className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                              <Users className="h-4 w-4" />
+                              {batch}
+                            </div>
+                            <div className="ml-6 space-y-2">
+                              {(payments as any[]).map((payment: any) => (
+                                <div key={payment.id} className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                  <div className="flex items-center space-x-3">
+                                    <div className="w-8 h-8 bg-red-100 dark:bg-red-800 rounded-full flex items-center justify-center">
+                                      <AlertCircle className="h-4 w-4 text-red-600" />
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-gray-900 dark:text-gray-100">{payment.student?.name}</p>
+                                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        {payment.monthYear} • Due: {payment.dueDate}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center space-x-3">
+                                    <span className="font-semibold text-red-600">₹{payment.amount}</span>
+                                    <Button size="sm" variant="outline">
+                                      <MessageSquare className="h-4 w-4 mr-2" />
+                                      Send Reminder
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     ))}
                   </div>

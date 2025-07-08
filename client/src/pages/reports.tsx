@@ -21,6 +21,32 @@ export default function Reports() {
     start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
     end: new Date().toISOString().split('T')[0]
   });
+  
+  const generateReport = async (type: string, filters?: any) => {
+    try {
+      const queryParams = new URLSearchParams({
+        startDate: dateRange.start,
+        endDate: dateRange.end,
+        ...filters
+      }).toString();
+      
+      const response = await fetch(`/api/reports/generate/${type}?${queryParams}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Create and download CSV/PDF
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${type}-report-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error('Report generation failed:', error);
+    }
+  };
 
   const reportCategories = [
     {

@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Sparkles, 
   Send, 
@@ -14,12 +16,47 @@ import {
   CheckCircle,
   Brain,
   Lightbulb,
-  Target
+  Target,
+  Loader2
 } from "lucide-react";
 
 export default function AIInsights() {
   const [query, setQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  const { data: studentInsights, isLoading: studentLoading } = useQuery({
+    queryKey: ['/api/ai-insights/student-analysis'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const { data: revenueAnalysis, isLoading: revenueLoading } = useQuery({
+    queryKey: ['/api/ai-insights/revenue-analysis'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const { data: attendanceInsights, isLoading: attendanceLoading } = useQuery({
+    queryKey: ['/api/ai-insights/attendance-insights'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const isLoading = studentLoading || revenueLoading || attendanceLoading;
+
+  const handleViewDetailedAnalysis = () => {
+    if (isLoading) {
+      toast({
+        title: "Loading",
+        description: "AI insights are still loading. Please wait...",
+        variant: "default",
+      });
+      return;
+    }
+    
+    // Navigate to detailed analysis view
+    toast({
+      title: "Detailed Analysis",
+      description: "Opening detailed AI analysis view...",
+    });
+  };
 
   const insights = [
     {
@@ -123,12 +160,12 @@ export default function AIInsights() {
   const handleSendQuery = async () => {
     if (!query.trim()) return;
     
-    setIsLoading(true);
-    // Simulate AI processing
-    setTimeout(() => {
-      setIsLoading(false);
-      setQuery("");
-    }, 2000);
+    toast({
+      title: "AI Processing",
+      description: "Analyzing your query with AI insights...",
+    });
+    
+    setQuery("");
   };
 
   const getImpactBadge = (impact: string) => {
