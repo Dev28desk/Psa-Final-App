@@ -126,3 +126,195 @@ export async function generateAttendanceInsights() {
     throw new Error("Failed to generate attendance insights");
   }
 }
+
+export async function generateRetentionForecast() {
+  try {
+    const students = await storage.getStudents();
+    const payments = await storage.getPayments();
+    const attendance = await storage.getAttendanceStats();
+    const dashboardStats = await storage.getDashboardStats();
+
+    // Calculate retention metrics
+    const retentionMetrics = calculateRetentionMetrics(students, payments, attendance);
+
+    const prompt = `
+    Analyze this sports academy data to predict student retention and provide forecasting insights:
+
+    Student Data:
+    - Total Students: ${dashboardStats.totalStudents}
+    - Active Students: ${dashboardStats.activeStudents}
+    - Student Cohorts: ${JSON.stringify(retentionMetrics.cohorts)}
+    - Dropout Patterns: ${JSON.stringify(retentionMetrics.dropoutPatterns)}
+
+    Payment Data:
+    - Payment Regularity: ${JSON.stringify(retentionMetrics.paymentPatterns)}
+    - Pending Fees: ${dashboardStats.pendingFees}
+    - Payment Defaults: ${JSON.stringify(retentionMetrics.paymentDefaults)}
+
+    Attendance Data:
+    - Attendance Rates: ${JSON.stringify(retentionMetrics.attendanceRates)}
+    - Attendance Trends: ${JSON.stringify(retentionMetrics.attendanceTrends)}
+
+    Please provide a comprehensive retention forecast including:
+    1. Overall retention rate prediction for next 3 months
+    2. High-risk students identification (criteria and list)
+    3. Retention factors (positive and negative)
+    4. Early warning indicators
+    5. Intervention strategies
+    6. Seasonal trends impact
+    7. Sport-specific retention patterns
+    8. Action plan for improvement
+
+    Format as JSON with sections: 
+    {
+      "overallForecast": {
+        "currentRetentionRate": number,
+        "predictedRetentionRate": number,
+        "confidenceScore": number,
+        "timeframe": "3 months"
+      },
+      "highRiskStudents": {
+        "count": number,
+        "criteria": ["criteria1", "criteria2"],
+        "riskFactors": ["factor1", "factor2"]
+      },
+      "retentionFactors": {
+        "positive": ["factor1", "factor2"],
+        "negative": ["factor1", "factor2"]
+      },
+      "warningIndicators": ["indicator1", "indicator2"],
+      "interventionStrategies": ["strategy1", "strategy2"],
+      "seasonalTrends": ["trend1", "trend2"],
+      "sportSpecificPatterns": {"sport1": "pattern", "sport2": "pattern"},
+      "actionPlan": ["action1", "action2"]
+    }
+    `;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-pro",
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "object",
+          properties: {
+            overallForecast: {
+              type: "object",
+              properties: {
+                currentRetentionRate: { type: "number" },
+                predictedRetentionRate: { type: "number" },
+                confidenceScore: { type: "number" },
+                timeframe: { type: "string" }
+              }
+            },
+            highRiskStudents: {
+              type: "object",
+              properties: {
+                count: { type: "number" },
+                criteria: { type: "array", items: { type: "string" } },
+                riskFactors: { type: "array", items: { type: "string" } }
+              }
+            },
+            retentionFactors: {
+              type: "object",
+              properties: {
+                positive: { type: "array", items: { type: "string" } },
+                negative: { type: "array", items: { type: "string" } }
+              }
+            },
+            warningIndicators: { type: "array", items: { type: "string" } },
+            interventionStrategies: { type: "array", items: { type: "string" } },
+            seasonalTrends: { type: "array", items: { type: "string" } },
+            sportSpecificPatterns: { type: "object" },
+            actionPlan: { type: "array", items: { type: "string" } }
+          }
+        }
+      },
+      contents: prompt,
+    });
+
+    return JSON.parse(response.text || "{}");
+  } catch (error) {
+    console.error('Error generating retention forecast:', error);
+    return {
+      overallForecast: {
+        currentRetentionRate: 0,
+        predictedRetentionRate: 0,
+        confidenceScore: 0,
+        timeframe: "3 months"
+      },
+      highRiskStudents: {
+        count: 0,
+        criteria: ["Data analysis unavailable"],
+        riskFactors: ["System connectivity issues"]
+      },
+      retentionFactors: {
+        positive: ["Unable to analyze"],
+        negative: ["Data processing error"]
+      },
+      warningIndicators: ["System monitoring required"],
+      interventionStrategies: ["Contact support for assistance"],
+      seasonalTrends: ["Analysis unavailable"],
+      sportSpecificPatterns: {},
+      actionPlan: ["Verify system connectivity"]
+    };
+  }
+}
+
+function calculateRetentionMetrics(students: any[], payments: any[], attendance: any) {
+  const now = new Date();
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+  const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+
+  // Calculate cohorts based on joining date
+  const cohorts = {
+    recent: students.filter(s => new Date(s.joiningDate) >= threeMonthsAgo).length,
+    midTerm: students.filter(s => {
+      const joinDate = new Date(s.joiningDate);
+      return joinDate >= sixMonthsAgo && joinDate < threeMonthsAgo;
+    }).length,
+    longTerm: students.filter(s => new Date(s.joiningDate) < sixMonthsAgo).length
+  };
+
+  // Calculate dropout patterns
+  const dropoutPatterns = {
+    inactiveStudents: students.filter(s => !s.isActive).length,
+    totalStudents: students.length,
+    dropoutRate: students.length > 0 ? (students.filter(s => !s.isActive).length / students.length * 100) : 0
+  };
+
+  // Calculate payment patterns
+  const paymentPatterns = {
+    regularPayments: payments.filter(p => p.status === 'completed').length,
+    pendingPayments: payments.filter(p => p.status === 'pending').length,
+    failedPayments: payments.filter(p => p.status === 'failed').length
+  };
+
+  // Calculate payment defaults
+  const paymentDefaults = {
+    overdueFees: payments.filter(p => p.status === 'pending' && new Date(p.dueDate) < now).length,
+    totalPayments: payments.length
+  };
+
+  // Calculate attendance rates (mock data for now)
+  const attendanceRates = {
+    overall: attendance?.averageAttendance || 0,
+    byMonth: attendance?.monthlyStats || {},
+    bySport: attendance?.sportStats || {}
+  };
+
+  // Calculate attendance trends
+  const attendanceTrends = {
+    declining: attendance?.decliningStudents || [],
+    improving: attendance?.improvingStudents || [],
+    stable: attendance?.stableStudents || []
+  };
+
+  return {
+    cohorts,
+    dropoutPatterns,
+    paymentPatterns,
+    paymentDefaults,
+    attendanceRates,
+    attendanceTrends
+  };
+}

@@ -4,7 +4,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { reportGenerator } from "./report-generator";
 import { CampaignAutomation } from "./campaign-automation";
-import { generateStudentInsights, generateRevenueAnalysis, generateAttendanceInsights } from "./ai-insights";
+import { generateStudentInsights, generateRevenueAnalysis, generateAttendanceInsights, generateRetentionForecast } from "./ai-insights";
 import { sendWhatsAppNotification } from "./notifications";
 import { locationTrackingService } from "./location-tracking";
 import { userPermissionService } from "./user-permission";
@@ -686,6 +686,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(insights);
     } catch (error: any) {
       console.error("Attendance insights error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/ai-insights/retention-forecast", async (req, res) => {
+    try {
+      const { generateRetentionForecast } = await import("./ai-insights");
+      const forecast = await generateRetentionForecast();
+      res.json(forecast);
+    } catch (error: any) {
+      console.error("Retention forecast error:", error);
       res.status(500).json({ error: error.message });
     }
   });

@@ -17,7 +17,13 @@ import {
   Brain,
   Lightbulb,
   Target,
-  Loader2
+  Loader2,
+  UserMinus,
+  TrendingDown,
+  Shield,
+  Activity,
+  Calendar,
+  UserCheck
 } from "lucide-react";
 
 export default function AIInsights() {
@@ -39,7 +45,12 @@ export default function AIInsights() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const isLoading = studentLoading || revenueLoading || attendanceLoading;
+  const { data: retentionForecast, isLoading: retentionLoading } = useQuery({
+    queryKey: ['/api/ai-insights/retention-forecast'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const isLoading = studentLoading || revenueLoading || attendanceLoading || retentionLoading;
 
   const handleViewDetailedAnalysis = () => {
     if (isLoading) {
@@ -272,6 +283,158 @@ export default function AIInsights() {
           </Card>
         ))}
       </div>
+
+      {/* Student Retention Forecast */}
+      <Card className="chart-container">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <UserCheck className="h-5 w-5 text-blue-600" />
+            <span>Student Retention Forecast</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {retentionLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-accent" />
+              <span className="ml-2 text-gray-600">Analyzing retention patterns...</span>
+            </div>
+          ) : retentionForecast ? (
+            <div className="space-y-6">
+              {/* Overall Forecast */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <TrendingUp className="h-5 w-5 text-blue-600" />
+                    <h3 className="font-semibold text-blue-900 dark:text-blue-100">Current Retention</h3>
+                  </div>
+                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                    {retentionForecast.overallForecast?.currentRetentionRate || 0}%
+                  </p>
+                </div>
+                
+                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Target className="h-5 w-5 text-green-600" />
+                    <h3 className="font-semibold text-green-900 dark:text-green-100">Predicted Retention</h3>
+                  </div>
+                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                    {retentionForecast.overallForecast?.predictedRetentionRate || 0}%
+                  </p>
+                </div>
+                
+                <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <AlertTriangle className="h-5 w-5 text-orange-600" />
+                    <h3 className="font-semibold text-orange-900 dark:text-orange-100">At-Risk Students</h3>
+                  </div>
+                  <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                    {retentionForecast.highRiskStudents?.count || 0}
+                  </p>
+                </div>
+                
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Shield className="h-5 w-5 text-purple-600" />
+                    <h3 className="font-semibold text-purple-900 dark:text-purple-100">Confidence</h3>
+                  </div>
+                  <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                    {retentionForecast.overallForecast?.confidenceScore || 0}%
+                  </p>
+                </div>
+              </div>
+
+              {/* Risk Factors and Interventions */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center space-x-2">
+                    <AlertTriangle className="h-5 w-5 text-red-500" />
+                    <span>High-Risk Indicators</span>
+                  </h3>
+                  <div className="space-y-2">
+                    {(retentionForecast.highRiskStudents?.criteria || []).map((criteria, index) => (
+                      <div key={index} className="flex items-start space-x-2">
+                        <UserMinus className="h-4 w-4 text-red-500 mt-1 flex-shrink-0" />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{criteria}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center space-x-2">
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <span>Intervention Strategies</span>
+                  </h3>
+                  <div className="space-y-2">
+                    {(retentionForecast.interventionStrategies || []).map((strategy, index) => (
+                      <div key={index} className="flex items-start space-x-2">
+                        <Target className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{strategy}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Retention Factors */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center space-x-2">
+                    <TrendingUp className="h-5 w-5 text-green-500" />
+                    <span>Positive Factors</span>
+                  </h3>
+                  <div className="space-y-2">
+                    {(retentionForecast.retentionFactors?.positive || []).map((factor, index) => (
+                      <div key={index} className="flex items-start space-x-2">
+                        <CheckCircle className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{factor}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center space-x-2">
+                    <TrendingDown className="h-5 w-5 text-red-500" />
+                    <span>Negative Factors</span>
+                  </h3>
+                  <div className="space-y-2">
+                    {(retentionForecast.retentionFactors?.negative || []).map((factor, index) => (
+                      <div key={index} className="flex items-start space-x-2">
+                        <AlertTriangle className="h-4 w-4 text-red-500 mt-1 flex-shrink-0" />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{factor}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Plan */}
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center space-x-2">
+                  <Activity className="h-5 w-5 text-blue-500" />
+                  <span>Recommended Action Plan</span>
+                </h3>
+                <div className="space-y-2">
+                  {(retentionForecast.actionPlan || []).map((action, index) => (
+                    <div key={index} className="flex items-start space-x-2">
+                      <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold mt-0.5">
+                        {index + 1}
+                      </div>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{action}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Brain className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">Unable to generate retention forecast</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* AI Insights */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
