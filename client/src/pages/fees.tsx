@@ -1,0 +1,290 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { PaymentForm } from "@/components/fees/payment-form";
+import { FeeStatus } from "@/components/fees/fee-status";
+import { useRealtime } from "@/hooks/use-realtime";
+import { 
+  Search, 
+  Filter, 
+  Download, 
+  Plus, 
+  TrendingUp, 
+  AlertTriangle,
+  Clock,
+  CheckCircle
+} from "lucide-react";
+
+export default function Fees() {
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  
+  useRealtime();
+
+  const { data: paymentsData, isLoading } = useQuery({
+    queryKey: ['/api/payments', { search: searchTerm, status: statusFilter !== 'all' ? statusFilter : undefined }],
+  });
+
+  const { data: revenueStats } = useQuery({
+    queryKey: ['/api/payments/revenue-stats'],
+  });
+
+  const { data: pendingPayments } = useQuery({
+    queryKey: ['/api/payments/pending'],
+  });
+
+  const { data: students } = useQuery({
+    queryKey: ['/api/students'],
+  });
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <Badge className="status-paid">Paid</Badge>;
+      case 'pending':
+        return <Badge className="status-pending">Pending</Badge>;
+      case 'failed':
+        return <Badge className="status-overdue">Failed</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
+  const getPaymentMethodBadge = (method: string) => {
+    const colors = {
+      cash: 'bg-green-100 text-green-800',
+      upi: 'bg-blue-100 text-blue-800',
+      card: 'bg-purple-100 text-purple-800',
+      online: 'bg-orange-100 text-orange-800'
+    };
+    
+    return (
+      <Badge className={`status-badge ${colors[method as keyof typeof colors] || 'bg-gray-100 text-gray-800'}`}>
+        {method.toUpperCase()}
+      </Badge>
+    );
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Fees & Payments</h1>
+          <p className="text-gray-600">Manage student fees and payment collection</p>
+        </div>
+        <Button onClick={() => setIsPaymentDialogOpen(true)} className="bg-accent hover:bg-accent/90">
+          <Plus className="h-4 w-4 mr-2" />
+          Record Payment
+        </Button>
+      </div>
+
+      {/* Revenue Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="metric-card">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Revenue</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  ₹{revenueStats?.total.toLocaleString() || 0}
+                </p>
+                <p className="text-sm text-success">All time collection</p>
+              </div>
+              <div className="p-3 bg-green-50 rounded-full">
+                <TrendingUp className="h-6 w-6 text-success" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="metric-card">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">This Month</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  ₹{revenueStats?.thisMonth.toLocaleString() || 0}
+                </p>
+                <p className="text-sm text-success">
+                  +{revenueStats?.growth.toFixed(1) || 0}% from last month
+                </p>
+              </div>
+              <div className="p-3 bg-blue-50 rounded-full">
+                <CheckCircle className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="metric-card">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Pending Dues</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  ₹{pendingPayments?.reduce((sum: number, p: any) => sum + parseFloat(p.amount), 0).toLocaleString() || 0}
+                </p>
+                <p className="text-sm text-error">{pendingPayments?.length || 0} students</p>
+              </div>
+              <div className="p-3 bg-red-50 rounded-full">
+                <AlertTriangle className="h-6 w-6 text-destructive" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="metric-card">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Collection Rate</p>
+                <p className="text-3xl font-bold text-gray-900">87%</p>
+                <p className="text-sm text-warning">This month</p>
+              </div>
+              <div className="p-3 bg-yellow-50 rounded-full">
+                <Clock className="h-6 w-6 text-warning" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Fee Status Overview */}
+      <FeeStatus students={students?.students || []} />
+
+      {/* Payments Table */}
+      <Card className="data-table">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Payment Records</CardTitle>
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search payments..."
+                  className="pl-10 w-64"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <select
+                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="all">All Status</option>
+                <option value="completed">Paid</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed</option>
+              </select>
+              <Button variant="outline" size="sm">
+                <Filter className="h-4 w-4 mr-2" />
+                Filters
+              </Button>
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="animate-pulse space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-16 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Student
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Amount
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Method
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {paymentsData?.payments?.map((payment: any) => (
+                    <tr key={payment.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          Student {payment.studentId}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          Receipt: {payment.receiptNumber}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-data font-bold text-gray-900">
+                          ₹{parseFloat(payment.amount).toLocaleString()}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900 capitalize">
+                          {payment.paymentType}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getPaymentMethodBadge(payment.paymentMethod)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getStatusBadge(payment.status)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString() : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <Button variant="link" size="sm" className="text-primary">
+                          View Receipt
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Payment Dialog */}
+      <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Record Payment</DialogTitle>
+          </DialogHeader>
+          <PaymentForm 
+            onSuccess={() => setIsPaymentDialogOpen(false)}
+            students={students?.students || []}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

@@ -1,0 +1,292 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(31, 43%, 16%);
+  --muted: hsl(210, 40%, 98%);
+  --muted-foreground: hsl(215, 13%, 65%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(31, 43%, 16%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(31, 43%, 16%);
+  --border: hsl(214, 32%, 91%);
+  --input: hsl(214, 32%, 91%);
+  --primary: hsl(220, 92%, 32%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(210, 40%, 96%);
+  --secondary-foreground: hsl(220, 9%, 46%);
+  --accent: hsl(20, 93%, 50%);
+  --accent-foreground: hsl(0, 0%, 100%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(220, 92%, 32%);
+  --radius: 0.5rem;
+  --success: hsl(142, 76%, 36%);
+  --warning: hsl(43, 94%, 48%);
+  --info: hsl(214, 92%, 60%);
+  --error: hsl(0, 84%, 60%);
+}
+
+.dark {
+  --background: hsl(220, 13%, 8%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(220, 13%, 16%);
+  --muted-foreground: hsl(215, 13%, 65%);
+  --popover: hsl(220, 13%, 8%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(220, 13%, 8%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(220, 13%, 16%);
+  --input: hsl(220, 13%, 16%);
+  --primary: hsl(220, 92%, 32%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(220, 13%, 16%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(20, 93%, 50%);
+  --accent-foreground: hsl(0, 0%, 100%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(220, 92%, 32%);
+  --success: hsl(142, 76%, 36%);
+  --warning: hsl(43, 94%, 48%);
+  --info: hsl(214, 92%, 60%);
+  --error: hsl(0, 84%, 60%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', 'Roboto', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', 'Poppins', system-ui, sans-serif;
+  }
+
+  .font-data {
+    font-family: 'Roboto Mono', monospace;
+  }
+}
+
+@layer components {
+  .sidebar-active {
+    @apply bg-accent text-accent-foreground;
+  }
+
+  .sidebar-item {
+    @apply flex items-center space-x-3 py-3 px-4 rounded-lg transition-colors hover:bg-blue-800;
+  }
+
+  .metric-card {
+    @apply bg-card p-6 rounded-lg shadow-sm border border-border;
+  }
+
+  .data-table {
+    @apply w-full bg-card rounded-lg shadow-sm border border-border;
+  }
+
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .status-paid {
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300;
+  }
+
+  .status-pending {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300;
+  }
+
+  .status-overdue {
+    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300;
+  }
+
+  .status-present {
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300;
+  }
+
+  .status-absent {
+    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300;
+  }
+
+  .status-late {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300;
+  }
+
+  .chart-container {
+    @apply bg-card p-6 rounded-lg shadow-sm border border-border;
+  }
+
+  .activity-item {
+    @apply flex items-start space-x-3 py-3 border-b border-border last:border-b-0;
+  }
+
+  .activity-icon {
+    @apply p-2 rounded-full;
+  }
+
+  .insight-card {
+    @apply p-4 rounded-lg border border-border;
+  }
+
+  .insight-success {
+    @apply bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800;
+  }
+
+  .insight-warning {
+    @apply bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800;
+  }
+
+  .insight-info {
+    @apply bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800;
+  }
+
+  .quick-action {
+    @apply bg-card p-4 rounded-lg shadow-sm border border-border hover:shadow-md transition-shadow cursor-pointer;
+  }
+
+  .progress-bar {
+    @apply h-2 bg-muted rounded-full overflow-hidden;
+  }
+
+  .progress-fill {
+    @apply h-full transition-all duration-300;
+  }
+
+  .attendance-calendar {
+    @apply bg-card p-4 rounded-lg border border-border;
+  }
+
+  .attendance-day {
+    @apply w-8 h-8 rounded-md flex items-center justify-center text-sm font-medium cursor-pointer;
+  }
+
+  .attendance-present {
+    @apply bg-green-500 text-white;
+  }
+
+  .attendance-absent {
+    @apply bg-red-500 text-white;
+  }
+
+  .attendance-partial {
+    @apply bg-yellow-500 text-white;
+  }
+
+  .attendance-no-class {
+    @apply bg-muted text-muted-foreground;
+  }
+
+  .digital-card {
+    @apply bg-gradient-to-br from-primary to-accent text-white rounded-xl p-6 shadow-lg;
+  }
+
+  .digital-card-back {
+    @apply bg-gradient-to-br from-accent to-primary text-white rounded-xl p-6 shadow-lg;
+  }
+
+  .payment-grid {
+    @apply grid grid-cols-6 gap-1 text-xs;
+  }
+
+  .payment-cell {
+    @apply w-8 h-8 rounded flex items-center justify-center font-medium;
+  }
+
+  .payment-paid {
+    @apply bg-success text-white;
+  }
+
+  .payment-pending {
+    @apply bg-warning text-white;
+  }
+
+  .payment-overdue {
+    @apply bg-destructive text-white;
+  }
+
+  .payment-future {
+    @apply bg-muted text-muted-foreground;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-bounce-slow {
+    animation: bounce 2s infinite;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Scrollbar customization */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--foreground));
+}
