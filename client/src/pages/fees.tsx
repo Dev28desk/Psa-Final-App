@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PaymentForm } from "@/components/fees/payment-form";
 import { FeeStatus } from "@/components/fees/fee-status";
+import { PaymentRecorder } from "@/components/payments/payment-recorder";
 import { useRealtime } from "@/hooks/use-realtime";
 import { 
   Search, 
@@ -71,18 +73,28 @@ export default function Fees() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Fees & Payments</h1>
-          <p className="text-gray-600">Manage student fees and payment collection</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Fees & Payments</h1>
+          <p className="text-gray-600 dark:text-gray-400">Manage student fees and payment collection</p>
         </div>
-        <Button onClick={() => setIsPaymentDialogOpen(true)} className="bg-accent hover:bg-accent/90">
-          <Plus className="h-4 w-4 mr-2" />
-          Record Payment
-        </Button>
       </div>
+
+      <Tabs defaultValue="quick-record" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsTrigger value="quick-record">Quick Record</TabsTrigger>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="pending">Pending</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="quick-record">
+          <PaymentRecorder />
+        </TabsContent>
+
+        <TabsContent value="overview">
+          <div className="space-y-6">
 
       {/* Revenue Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -272,6 +284,53 @@ export default function Fees() {
           )}
         </CardContent>
       </Card>
+      </div>
+        </TabsContent>
+
+        <TabsContent value="pending">
+          <div className="space-y-6">
+            {/* Pending Payments Summary */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Pending Payments
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {pendingPayments && pendingPayments.length > 0 ? (
+                  <div className="space-y-4">
+                    {pendingPayments.map((payment: any) => (
+                      <div key={payment.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-gray-100">{payment.student?.name}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {payment.monthYear} • ₹{payment.amount}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="status-pending">
+                            {payment.daysOverdue} days overdue
+                          </Badge>
+                          <Button size="sm" onClick={() => setIsPaymentDialogOpen(true)}>
+                            Collect
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                    <p className="text-lg font-medium text-gray-900 dark:text-gray-100">All payments are up to date!</p>
+                    <p className="text-gray-500 dark:text-gray-400">No pending payments at the moment.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Payment Dialog */}
       <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
