@@ -216,6 +216,48 @@ export const messageTemplates = pgTable("message_templates", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Custom Reports table
+export const customReports = pgTable("custom_reports", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  category: text("category").notNull(), // students, payments, attendance, performance, financial
+  queryConfig: jsonb("query_config").notNull(), // { tables, fields, filters, groupBy, orderBy, joins }
+  chartConfig: jsonb("chart_config"), // { type, xAxis, yAxis, series, colors }
+  isPublic: boolean("is_public").default(false),
+  isScheduled: boolean("is_scheduled").default(false),
+  scheduleConfig: jsonb("schedule_config"), // { frequency, time, recipients, format }
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  lastRunAt: timestamp("last_run_at"),
+});
+
+// Report Executions table (for tracking report runs)
+export const reportExecutions = pgTable("report_executions", {
+  id: serial("id").primaryKey(),
+  reportId: integer("report_id").references(() => customReports.id),
+  status: text("status").notNull().default("pending"), // pending, running, completed, failed
+  result: jsonb("result"), // Generated report data
+  metadata: jsonb("metadata"), // Execution details, file paths, etc.
+  executedBy: integer("executed_by").references(() => users.id),
+  executedAt: timestamp("executed_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  errorMessage: text("error_message"),
+});
+
+// Saved Queries table
+export const savedQueries = pgTable("saved_queries", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  queryConfig: jsonb("query_config").notNull(),
+  isPublic: boolean("is_public").default(false),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Define relations
 export const usersRelations = relations(users, ({ many }) => ({
   students: many(students),
@@ -270,6 +312,20 @@ export const campaignsRelations = relations(campaigns, ({ one, many }) => ({
 export const campaignMessagesRelations = relations(campaignMessages, ({ one }) => ({
   campaign: one(campaigns, { fields: [campaignMessages.campaignId], references: [campaigns.id] }),
   student: one(students, { fields: [campaignMessages.studentId], references: [students.id] }),
+}));
+
+export const customReportsRelations = relations(customReports, ({ one, many }) => ({
+  createdBy: one(users, { fields: [customReports.createdBy], references: [users.id] }),
+  executions: many(reportExecutions),
+}));
+
+export const reportExecutionsRelations = relations(reportExecutions, ({ one }) => ({
+  report: one(customReports, { fields: [reportExecutions.reportId], references: [customReports.id] }),
+  executedBy: one(users, { fields: [reportExecutions.executedBy], references: [users.id] }),
+}));
+
+export const savedQueriesRelations = relations(savedQueries, ({ one }) => ({
+  createdBy: one(users, { fields: [savedQueries.createdBy], references: [users.id] }),
 }));
 
 // Schema types
@@ -328,6 +384,25 @@ export const insertMessageTemplateSchema = createInsertSchema(messageTemplates).
   updatedAt: true 
 });
 export const selectMessageTemplateSchema = createSelectSchema(messageTemplates);
+export const insertCustomReportSchema = createInsertSchema(customReports).omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true,
+  lastRunAt: true 
+});
+export const selectCustomReportSchema = createSelectSchema(customReports);
+export const insertReportExecutionSchema = createInsertSchema(reportExecutions).omit({ 
+  id: true, 
+  executedAt: true,
+  completedAt: true 
+});
+export const selectReportExecutionSchema = createSelectSchema(reportExecutions);
+export const insertSavedQuerySchema = createInsertSchema(savedQueries).omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true 
+});
+export const selectSavedQuerySchema = createSelectSchema(savedQueries);
 
 // Export types
 export type User = typeof users.$inferSelect;
@@ -360,3 +435,9 @@ export type CampaignMessage = typeof campaignMessages.$inferSelect;
 export type InsertCampaignMessage = typeof campaignMessages.$inferInsert;
 export type MessageTemplate = typeof messageTemplates.$inferSelect;
 export type InsertMessageTemplate = typeof messageTemplates.$inferInsert;
+export type CustomReport = typeof customReports.$inferSelect;
+export type InsertCustomReport = typeof customReports.$inferInsert;
+export type ReportExecution = typeof reportExecutions.$inferSelect;
+export type InsertReportExecution = typeof reportExecutions.$inferInsert;
+export type SavedQuery = typeof savedQueries.$inferSelect;
+export type InsertSavedQuery = typeof savedQueries.$inferInsert;

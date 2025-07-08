@@ -974,6 +974,108 @@ export class DatabaseStorage implements IStorage {
       return false;
     }
   }
+
+  // Custom Reports methods
+  async createCustomReport(report: InsertCustomReport): Promise<CustomReport> {
+    const [newReport] = await db.insert(customReports).values(report).returning();
+    return newReport;
+  }
+
+  async getCustomReports(filters?: { category?: string; createdBy?: number }): Promise<CustomReport[]> {
+    let query = db.select().from(customReports);
+    
+    if (filters?.category) {
+      query = query.where(eq(customReports.category, filters.category));
+    }
+    
+    if (filters?.createdBy) {
+      query = query.where(eq(customReports.createdBy, filters.createdBy));
+    }
+    
+    return await query.orderBy(desc(customReports.createdAt));
+  }
+
+  async getCustomReport(id: number): Promise<CustomReport | undefined> {
+    const [report] = await db.select().from(customReports).where(eq(customReports.id, id));
+    return report;
+  }
+
+  async updateCustomReport(id: number, updates: Partial<InsertCustomReport>): Promise<CustomReport> {
+    const [report] = await db
+      .update(customReports)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(customReports.id, id))
+      .returning();
+    return report;
+  }
+
+  async deleteCustomReport(id: number): Promise<void> {
+    await db.delete(customReports).where(eq(customReports.id, id));
+  }
+
+  // Report Executions methods
+  async createReportExecution(execution: InsertReportExecution): Promise<ReportExecution> {
+    const [newExecution] = await db.insert(reportExecutions).values(execution).returning();
+    return newExecution;
+  }
+
+  async getReportExecutions(reportId?: number): Promise<ReportExecution[]> {
+    let query = db.select().from(reportExecutions);
+    
+    if (reportId) {
+      query = query.where(eq(reportExecutions.reportId, reportId));
+    }
+    
+    return await query.orderBy(desc(reportExecutions.executedAt));
+  }
+
+  async getReportExecution(id: number): Promise<ReportExecution | undefined> {
+    const [execution] = await db.select().from(reportExecutions).where(eq(reportExecutions.id, id));
+    return execution;
+  }
+
+  async updateReportExecution(id: number, updates: Partial<InsertReportExecution>): Promise<ReportExecution> {
+    const [execution] = await db
+      .update(reportExecutions)
+      .set(updates)
+      .where(eq(reportExecutions.id, id))
+      .returning();
+    return execution;
+  }
+
+  // Saved Queries methods
+  async createSavedQuery(query: InsertSavedQuery): Promise<SavedQuery> {
+    const [newQuery] = await db.insert(savedQueries).values(query).returning();
+    return newQuery;
+  }
+
+  async getSavedQueries(createdBy?: number): Promise<SavedQuery[]> {
+    let query = db.select().from(savedQueries);
+    
+    if (createdBy) {
+      query = query.where(eq(savedQueries.createdBy, createdBy));
+    }
+    
+    return await query.orderBy(desc(savedQueries.createdAt));
+  }
+
+  async getSavedQuery(id: number): Promise<SavedQuery | undefined> {
+    const [query] = await db.select().from(savedQueries).where(eq(savedQueries.id, id));
+    return query;
+  }
+
+  async updateSavedQuery(id: number, updates: Partial<InsertSavedQuery>): Promise<SavedQuery> {
+    const [query] = await db
+      .update(savedQueries)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(savedQueries.id, id))
+      .returning();
+    return query;
+  }
+
+  async deleteSavedQuery(id: number): Promise<void> {
+    await db.delete(savedQueries).where(eq(savedQueries.id, id));
+  }
 }
 
 export const storage = new DatabaseStorage();

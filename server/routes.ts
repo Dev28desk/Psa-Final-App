@@ -937,5 +937,177 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Custom Reports endpoints
+  app.get("/api/reports", async (req, res) => {
+    try {
+      const { category, createdBy } = req.query;
+      const reports = await storage.getCustomReports({ 
+        category: category as string, 
+        createdBy: createdBy ? parseInt(createdBy as string) : undefined 
+      });
+      res.json(reports);
+    } catch (error) {
+      console.error("Error fetching reports:", error);
+      res.status(500).json({ error: "Failed to fetch reports" });
+    }
+  });
+
+  app.get("/api/reports/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const report = await storage.getCustomReport(parseInt(id));
+      if (!report) {
+        return res.status(404).json({ error: "Report not found" });
+      }
+      res.json(report);
+    } catch (error) {
+      console.error("Error fetching report:", error);
+      res.status(500).json({ error: "Failed to fetch report" });
+    }
+  });
+
+  app.post("/api/reports", async (req, res) => {
+    try {
+      const reportData = req.body;
+      const report = await storage.createCustomReport(reportData);
+      res.json(report);
+    } catch (error) {
+      console.error("Error creating report:", error);
+      res.status(500).json({ error: "Failed to create report" });
+    }
+  });
+
+  app.put("/api/reports/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const report = await storage.updateCustomReport(parseInt(id), updates);
+      res.json(report);
+    } catch (error) {
+      console.error("Error updating report:", error);
+      res.status(500).json({ error: "Failed to update report" });
+    }
+  });
+
+  app.delete("/api/reports/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteCustomReport(parseInt(id));
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting report:", error);
+      res.status(500).json({ error: "Failed to delete report" });
+    }
+  });
+
+  // Report execution endpoints
+  app.post("/api/reports/:id/execute", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { reportGenerator } = await import("./report-generator");
+      const execution = await reportGenerator.generateReport(parseInt(id), 1); // TODO: get actual user ID
+      res.json(execution);
+    } catch (error) {
+      console.error("Error executing report:", error);
+      res.status(500).json({ error: "Failed to execute report" });
+    }
+  });
+
+  app.get("/api/reports/:id/executions", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const executions = await storage.getReportExecutions(parseInt(id));
+      res.json(executions);
+    } catch (error) {
+      console.error("Error fetching executions:", error);
+      res.status(500).json({ error: "Failed to fetch executions" });
+    }
+  });
+
+  app.get("/api/executions/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const execution = await storage.getReportExecution(parseInt(id));
+      if (!execution) {
+        return res.status(404).json({ error: "Execution not found" });
+      }
+      res.json(execution);
+    } catch (error) {
+      console.error("Error fetching execution:", error);
+      res.status(500).json({ error: "Failed to fetch execution" });
+    }
+  });
+
+  // Saved queries endpoints
+  app.get("/api/saved-queries", async (req, res) => {
+    try {
+      const { createdBy } = req.query;
+      const queries = await storage.getSavedQueries(createdBy ? parseInt(createdBy as string) : undefined);
+      res.json(queries);
+    } catch (error) {
+      console.error("Error fetching saved queries:", error);
+      res.status(500).json({ error: "Failed to fetch saved queries" });
+    }
+  });
+
+  app.post("/api/saved-queries", async (req, res) => {
+    try {
+      const queryData = req.body;
+      const query = await storage.createSavedQuery(queryData);
+      res.json(query);
+    } catch (error) {
+      console.error("Error creating saved query:", error);
+      res.status(500).json({ error: "Failed to create saved query" });
+    }
+  });
+
+  app.put("/api/saved-queries/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const query = await storage.updateSavedQuery(parseInt(id), updates);
+      res.json(query);
+    } catch (error) {
+      console.error("Error updating saved query:", error);
+      res.status(500).json({ error: "Failed to update saved query" });
+    }
+  });
+
+  app.delete("/api/saved-queries/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteSavedQuery(parseInt(id));
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting saved query:", error);
+      res.status(500).json({ error: "Failed to delete saved query" });
+    }
+  });
+
+  // Predefined report templates
+  app.get("/api/reports/templates/predefined", async (req, res) => {
+    try {
+      const { reportGenerator } = await import("./report-generator");
+      const templates = reportGenerator.getPredefinedReports();
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching predefined templates:", error);
+      res.status(500).json({ error: "Failed to fetch predefined templates" });
+    }
+  });
+
+  // Execute query endpoint for query builder
+  app.post("/api/reports/execute-query", async (req, res) => {
+    try {
+      const { queryConfig } = req.body;
+      const { reportGenerator } = await import("./report-generator");
+      const results = await reportGenerator.executeQuery(queryConfig);
+      res.json(results);
+    } catch (error) {
+      console.error("Error executing query:", error);
+      res.status(500).json({ error: "Failed to execute query" });
+    }
+  });
+
   return httpServer;
 }

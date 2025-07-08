@@ -9,6 +9,7 @@ import Students from "@/pages/students";
 import Fees from "@/pages/fees";
 import Attendance from "@/pages/attendance";
 import Reports from "@/pages/reports";
+import AdvancedReports from "@/pages/advanced-reports";
 import AIInsights from "@/pages/ai-insights";
 import Settings from "@/pages/settings";
 import Sports from "@/pages/sports";
@@ -46,6 +47,7 @@ function Router() {
               <Route path="/fees" component={Fees} />
               <Route path="/attendance" component={Attendance} />
               <Route path="/reports" component={Reports} />
+              <Route path="/advanced-reports" component={AdvancedReports} />
               <Route path="/ai-insights" component={AIInsights} />
               <Route path="/settings" component={Settings} />
               <Route path="/sports" component={Sports} />
