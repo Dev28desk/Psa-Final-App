@@ -108,6 +108,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateBatchCapacity(student.batchId, 1);
       }
 
+      // Create the one-time registration fee payment record
+      const currentDate = new Date();
+      const registrationPayment = {
+        studentId: student.id,
+        amount: 300, // ₹300 one-time registration fee
+        method: "pending",
+        status: "pending",
+        monthYear: `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`,
+        description: "One-time registration fee",
+        type: "registration",
+        dueDate: currentDate,
+      };
+      
+      await storage.createPayment(registrationPayment);
+
       // Create activity
       await storage.createActivity({
         type: 'student_enrolled',
@@ -564,6 +579,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error creating icon:', error);
       res.status(500).json({ error: 'Failed to create icon' });
+    }
+  });
+
+  // Coaches routes
+  app.get('/api/coaches', async (req, res) => {
+    try {
+      const coaches = await storage.getCoaches();
+      res.json(coaches);
+    } catch (error) {
+      console.error('Error fetching coaches:', error);
+      res.status(500).json({ error: 'Failed to fetch coaches' });
+    }
+  });
+
+  app.get('/api/coaches/stats', async (req, res) => {
+    try {
+      const coaches = await storage.getCoaches();
+      const totalCoaches = coaches.length;
+      const activeCoaches = coaches.filter(c => c.isActive).length;
+      const avgExperience = coaches.reduce((sum, coach) => sum + (coach.experience || 0), 0) / totalCoaches || 0;
+      const students = await storage.getStudents();
+      const totalStudents = students.students.length;
+      
+      res.json({
+        totalCoaches,
+        activeCoaches,
+        avgExperience: Math.round(avgExperience),
+        totalStudents
+      });
+    } catch (error) {
+      console.error('Error fetching coach stats:', error);
+      res.status(500).json({ error: 'Failed to fetch coach stats' });
+    }
+  });
+
+  app.post('/api/coaches', async (req, res) => {
+    try {
+      const coach = await storage.createCoach(req.body);
+      res.json(coach);
+    } catch (error) {
+      console.error('Error creating coach:', error);
+      res.status(500).json({ error: 'Failed to create coach' });
+    }
+  });
+
+  app.put('/api/coaches/:id', async (req, res) => {
+    try {
+      const coach = await storage.updateCoach(parseInt(req.params.id), req.body);
+      res.json(coach);
+    } catch (error) {
+      console.error('Error updating coach:', error);
+      res.status(500).json({ error: 'Failed to update coach' });
+    }
+  });
+
+  app.delete('/api/coaches/:id', async (req, res) => {
+    try {
+      const success = await storage.deleteCoach(parseInt(req.params.id));
+      if (success) {
+        res.json({ success: true });
+      } else {
+        res.status(404).json({ error: 'Coach not found' });
+      }
+    } catch (error) {
+      console.error('Error deleting coach:', error);
+      res.status(500).json({ error: 'Failed to delete coach' });
     }
   });
 

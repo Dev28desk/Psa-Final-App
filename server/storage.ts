@@ -1,6 +1,6 @@
 import { 
-  users, students, sports, batches, payments, attendance, activities, communications, settings, icons, paymentGateways,
-  type User, type InsertUser, type Student, type InsertStudent, type Sport, type InsertSport,
+  users, coaches, students, sports, batches, payments, attendance, activities, communications, settings, icons, paymentGateways,
+  type User, type InsertUser, type Coach, type InsertCoach, type Student, type InsertStudent, type Sport, type InsertSport,
   type Batch, type InsertBatch, type Payment, type InsertPayment, type Attendance, type InsertAttendance,
   type Activity, type InsertActivity, type Communication, type InsertCommunication,
   type Setting, type InsertSetting, type Icon, type InsertIcon, type PaymentGateway, type InsertPaymentGateway
@@ -14,6 +14,13 @@ export interface IStorage {
   getUserByPhone(phone: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined>;
+
+  // Coach operations
+  getCoach(id: number): Promise<Coach | undefined>;
+  getCoaches(isActive?: boolean): Promise<Coach[]>;
+  createCoach(coach: InsertCoach): Promise<Coach>;
+  updateCoach(id: number, updates: Partial<InsertCoach>): Promise<Coach | undefined>;
+  deleteCoach(id: number): Promise<boolean>;
 
   // Student operations
   getStudent(id: number): Promise<Student | undefined>;
@@ -162,6 +169,36 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user;
+  }
+
+  // Coach operations
+  async getCoach(id: number): Promise<Coach | undefined> {
+    const [coach] = await db.select().from(coaches).where(eq(coaches.id, id));
+    return coach;
+  }
+
+  async getCoaches(isActive?: boolean): Promise<Coach[]> {
+    const conditions = isActive !== undefined ? [eq(coaches.isActive, isActive)] : [];
+    return await db.select().from(coaches).where(and(...conditions)).orderBy(asc(coaches.name));
+  }
+
+  async createCoach(coachData: InsertCoach): Promise<Coach> {
+    const [coach] = await db.insert(coaches).values(coachData).returning();
+    return coach;
+  }
+
+  async updateCoach(id: number, updates: Partial<InsertCoach>): Promise<Coach | undefined> {
+    const [coach] = await db
+      .update(coaches)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(coaches.id, id))
+      .returning();
+    return coach;
+  }
+
+  async deleteCoach(id: number): Promise<boolean> {
+    const result = await db.delete(coaches).where(eq(coaches.id, id));
+    return result.rowCount > 0;
   }
 
   // Student operations

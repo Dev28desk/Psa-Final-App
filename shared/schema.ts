@@ -16,6 +16,20 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Coaches table
+export const coaches = pgTable("coaches", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").unique(),
+  phone: text("phone").notNull(),
+  specialization: text("specialization").notNull(),
+  experience: integer("experience").default(0),
+  qualifications: text("qualifications"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Sports table
 export const sports = pgTable("sports", {
   id: serial("id").primaryKey(),
@@ -161,6 +175,10 @@ export const usersRelations = relations(users, ({ many }) => ({
   activities: many(activities),
 }));
 
+export const coachesRelations = relations(coaches, ({ many }) => ({
+  batches: many(batches),
+}));
+
 export const sportsRelations = relations(sports, ({ many }) => ({
   batches: many(batches),
   students: many(students),
@@ -218,10 +236,14 @@ export const insertIconSchema = createInsertSchema(icons);
 export const selectIconSchema = createSelectSchema(icons);
 export const insertPaymentGatewaySchema = createInsertSchema(paymentGateways);
 export const selectPaymentGatewaySchema = createSelectSchema(paymentGateways);
+export const insertCoachSchema = createInsertSchema(coaches);
+export const selectCoachSchema = createSelectSchema(coaches);
 
 // Export types
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
+export type Coach = typeof coaches.$inferSelect;
+export type InsertCoach = typeof coaches.$inferInsert;
 export type Sport = typeof sports.$inferSelect;
 export type InsertSport = typeof sports.$inferInsert;
 export type Batch = typeof batches.$inferSelect;

@@ -262,6 +262,22 @@ export function StudentForm({ onSuccess, sports, batches }: StudentFormProps) {
         />
       </div>
 
+      {/* Registration Fee Notice */}
+      <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="font-semibold text-blue-900 dark:text-blue-100">Registration Fee</h4>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              One-time registration fee required for new students
+            </p>
+          </div>
+          <div className="text-right">
+            <span className="text-2xl font-bold text-blue-900 dark:text-blue-100">₹300</span>
+            <p className="text-xs text-blue-600 dark:text-blue-400">One-time payment</p>
+          </div>
+        </div>
+      </div>
+
       <div className="flex justify-end space-x-3">
         <Button type="button" variant="outline" onClick={onSuccess}>
           Cancel

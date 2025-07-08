@@ -1,371 +1,412 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import { Plus, Send, MessageSquare, Phone, Mail, Users, Clock, Filter, Search, Eye, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertCommunicationSchema } from "@shared/schema";
 import { z } from "zod";
+import { Plus, Edit2, Trash2, Users, Trophy, Calendar } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
-const communicationFormSchema = insertCommunicationSchema.extend({
-  recipients: z.array(z.string()).min(1, "At least one recipient is required"),
+const coachSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  specialization: z.string().min(2, "Specialization is required"),
+  experience: z.number().min(0, "Experience must be positive"),
+  qualifications: z.string().optional(),
+  isActive: z.boolean().default(true),
 });
 
-type CommunicationFormData = z.infer<typeof communicationFormSchema>;
+type CoachFormData = z.infer<typeof coachSchema>;
 
-export default function CommunicationsPage() {
+export default function Coaches() {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingCoach, setEditingCoach] = useState<any>(null);
   const { toast } = useToast();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedType, setSelectedType] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const queryClient = useQueryClient();
 
-  const { data: communications, isLoading } = useQuery({
-    queryKey: ['/api/communications', selectedType, searchQuery],
+  const { data: coaches = [], isLoading } = useQuery({
+    queryKey: ['/api/coaches'],
   });
 
-  const { data: students } = useQuery({
-    queryKey: ['/api/students'],
+  const { data: stats = {} } = useQuery({
+    queryKey: ['/api/coaches/stats'],
   });
 
-  const { data: communicationStats } = useQuery({
-    queryKey: ['/api/communications/stats'],
-  });
-
-  const form = useForm<CommunicationFormData>({
-    resolver: zodResolver(communicationFormSchema),
+  const form = useForm<CoachFormData>({
+    resolver: zodResolver(coachSchema),
     defaultValues: {
-      type: "sms",
-      recipients: [],
-      message: "",
-      templateId: "",
-      campaignId: "",
+      name: "",
+      email: "",
+      phone: "",
+      specialization: "",
+      experience: 0,
+      qualifications: "",
+      isActive: true,
     },
   });
 
-  const sendCommunicationMutation = useMutation({
-    mutationFn: async (data: CommunicationFormData) => {
-      return await apiRequest('POST', '/api/communications/send', data);
-    },
+  const createCoachMutation = useMutation({
+    mutationFn: (data: CoachFormData) => apiRequest("POST", "/api/coaches", data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/communications'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/communications/stats'] });
-      setIsDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['/api/coaches'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/coaches/stats'] });
+      setIsAddDialogOpen(false);
       form.reset();
       toast({
         title: "Success",
-        description: "Communication sent successfully.",
+        description: "Coach added successfully",
       });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to send communication",
+        description: error.message || "Failed to add coach",
         variant: "destructive",
       });
     },
   });
 
-  const deleteCommunicationMutation = useMutation({
-    mutationFn: async (id: number) => {
-      return await apiRequest('DELETE', `/api/communications/${id}`);
-    },
+  const updateCoachMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<CoachFormData> }) =>
+      apiRequest("PUT", `/api/coaches/${id}`, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/communications'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/communications/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/coaches'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/coaches/stats'] });
+      setEditingCoach(null);
+      form.reset();
       toast({
         title: "Success",
-        description: "Communication deleted successfully.",
+        description: "Coach updated successfully",
       });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to delete communication",
+        description: error.message || "Failed to update coach",
         variant: "destructive",
       });
     },
   });
 
-  const handleSubmit = (data: CommunicationFormData) => {
-    sendCommunicationMutation.mutate(data);
-  };
+  const deleteCoachMutation = useMutation({
+    mutationFn: (id: number) => apiRequest("DELETE", `/api/coaches/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/coaches'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/coaches/stats'] });
+      toast({
+        title: "Success",
+        description: "Coach deleted successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete coach",
+        variant: "destructive",
+      });
+    },
+  });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'sent': return 'bg-green-100 text-green-800';
-      case 'delivered': return 'bg-blue-100 text-blue-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      default: return 'bg-yellow-100 text-yellow-800';
+  const onSubmit = (data: CoachFormData) => {
+    if (editingCoach) {
+      updateCoachMutation.mutate({ id: editingCoach.id, data });
+    } else {
+      createCoachMutation.mutate(data);
     }
   };
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'sms': return <Phone className="h-4 w-4" />;
-      case 'email': return <Mail className="h-4 w-4" />;
-      case 'whatsapp': return <MessageSquare className="h-4 w-4" />;
-      default: return <MessageSquare className="h-4 w-4" />;
+  const handleEdit = (coach: any) => {
+    setEditingCoach(coach);
+    form.reset({
+      name: coach.name,
+      email: coach.email,
+      phone: coach.phone,
+      specialization: coach.specialization,
+      experience: coach.experience,
+      qualifications: coach.qualifications || "",
+      isActive: coach.isActive,
+    });
+    setIsAddDialogOpen(true);
+  };
+
+  const handleDelete = (id: number) => {
+    if (confirm("Are you sure you want to delete this coach?")) {
+      deleteCoachMutation.mutate(id);
     }
+  };
+
+  const handleDialogClose = () => {
+    setIsAddDialogOpen(false);
+    setEditingCoach(null);
+    form.reset();
   };
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-20 bg-gray-200 rounded-lg"></div>
-            ))}
-          </div>
-        </div>
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Communications</h1>
-          <p className="text-gray-600">Manage communication with students and parents</p>
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Coaches Management</h1>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Send Message
+              <Plus className="w-4 h-4 mr-2" />
+              Add Coach
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Send Communication</DialogTitle>
-              <DialogDescription>
-                Send messages to students and parents via SMS, Email, or WhatsApp
-              </DialogDescription>
+              <DialogTitle>
+                {editingCoach ? "Edit Coach" : "Add New Coach"}
+              </DialogTitle>
             </DialogHeader>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="type">Communication Type</Label>
-                  <Select 
-                    onValueChange={(value) => form.setValue('type', value as any)}
-                    defaultValue="sms"
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="sms">SMS</SelectItem>
-                      <SelectItem value="email">Email</SelectItem>
-                      <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                    </SelectContent>
-                  </Select>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter coach name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="Enter email" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-                <div>
-                  <Label htmlFor="recipients">Recipients</Label>
-                  <Select 
-                    onValueChange={(value) => {
-                      const currentRecipients = form.watch('recipients') || [];
-                      form.setValue('recipients', [...currentRecipients, value]);
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select recipients" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Students</SelectItem>
-                      {students?.students?.map((student: any) => (
-                        <SelectItem key={student.id} value={student.phone}>
-                          {student.name} - {student.phone}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter phone number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="specialization"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Specialization</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Cricket, Football" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-              </div>
-              <div>
-                <Label htmlFor="message">Message</Label>
-                <Textarea
-                  id="message"
-                  {...form.register('message')}
-                  placeholder="Enter your message..."
-                  rows={4}
+                <FormField
+                  control={form.control}
+                  name="experience"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Experience (Years)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Enter years of experience"
+                          {...field}
+                          onChange={(e) => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {form.formState.errors.message && (
-                  <p className="text-red-500 text-sm">{form.formState.errors.message.message}</p>
-                )}
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-gray-500">
-                  Selected recipients: {form.watch('recipients')?.length || 0}
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                <FormField
+                  control={form.control}
+                  name="qualifications"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Qualifications</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Enter qualifications and certifications"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleDialogClose}
+                  >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={sendCommunicationMutation.isPending}>
-                    <Send className="h-4 w-4 mr-2" />
-                    Send Message
+                  <Button
+                    type="submit"
+                    disabled={createCoachMutation.isPending || updateCoachMutation.isPending}
+                  >
+                    {editingCoach ? "Update Coach" : "Add Coach"}
                   </Button>
                 </div>
-              </div>
-            </form>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Sent</p>
-                <p className="text-2xl font-bold text-gray-900">{communicationStats?.totalSent || 0}</p>
-              </div>
-              <MessageSquare className="h-8 w-8 text-blue-500" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Coaches</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalCoaches || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              All registered coaches
+            </p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Delivered</p>
-                <p className="text-2xl font-bold text-green-600">{communicationStats?.delivered || 0}</p>
-              </div>
-              <Send className="h-8 w-8 text-green-500" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Coaches</CardTitle>
+            <Trophy className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.activeCoaches || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              Currently active
+            </p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Failed</p>
-                <p className="text-2xl font-bold text-red-600">{communicationStats?.failed || 0}</p>
-              </div>
-              <Clock className="h-8 w-8 text-red-500" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Avg Experience</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.avgExperience || 0} yrs</div>
+            <p className="text-xs text-muted-foreground">
+              Average experience
+            </p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Delivery Rate</p>
-                <p className="text-2xl font-bold text-purple-600">{communicationStats?.deliveryRate || 0}%</p>
-              </div>
-              <Users className="h-8 w-8 text-purple-500" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalStudents || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              Under coaching
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-4 mb-6">
-        <div className="flex items-center space-x-2">
-          <Filter className="h-4 w-4 text-gray-500" />
-          <Select value={selectedType} onValueChange={setSelectedType}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="sms">SMS</SelectItem>
-              <SelectItem value="email">Email</SelectItem>
-              <SelectItem value="whatsapp">WhatsApp</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center space-x-2 flex-1">
-          <Search className="h-4 w-4 text-gray-500" />
-          <Input
-            placeholder="Search communications..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* Communications List */}
-      <div className="space-y-4">
-        {communications?.map((communication: any) => (
-          <Card key={communication.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-4">
-                  <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-full">
-                    {getTypeIcon(communication.type)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Badge variant="outline" className="capitalize">
-                        {communication.type}
-                      </Badge>
-                      <Badge className={getStatusColor(communication.status)}>
-                        {communication.status}
-                      </Badge>
-                      <span className="text-sm text-gray-500">
-                        {new Date(communication.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="mb-2">
-                      <p className="text-sm font-medium text-gray-900">
-                        To: {communication.recipient}
-                      </p>
-                    </div>
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {communication.message}
-                    </p>
-                    {communication.sentAt && (
-                      <p className="text-xs text-gray-500 mt-2">
-                        Sent: {new Date(communication.sentAt).toLocaleString()}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex space-x-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 w-8 p-0"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => deleteCommunicationMutation.mutate(communication.id)}
-                    className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+      {/* Coaches List */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {coaches.map((coach: any) => (
+          <Card key={coach.id} className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">{coach.name}</CardTitle>
+                <Badge variant={coach.isActive ? "default" : "secondary"}>
+                  {coach.isActive ? "Active" : "Inactive"}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Email:</strong> {coach.email}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  <strong>Phone:</strong> {coach.phone}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  <strong>Specialization:</strong> {coach.specialization}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  <strong>Experience:</strong> {coach.experience} years
+                </p>
+                {coach.qualifications && (
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Qualifications:</strong> {coach.qualifications}
+                  </p>
+                )}
+              </div>
+              <div className="flex justify-end space-x-2 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleEdit(coach)}
+                >
+                  <Edit2 className="w-4 h-4 mr-1" />
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDelete(coach.id)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Delete
+                </Button>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {communications?.length === 0 && (
+      {coaches.length === 0 && (
         <div className="text-center py-12">
-          <MessageSquare className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No communications found</h3>
-          <p className="text-gray-600 mb-4">Start communicating with your students and parents</p>
-          <Button onClick={() => setIsDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Send Message
+          <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No coaches found</h3>
+          <p className="text-muted-foreground mb-4">
+            Get started by adding your first coach
+          </p>
+          <Button onClick={() => setIsAddDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Coach
           </Button>
         </div>
       )}
