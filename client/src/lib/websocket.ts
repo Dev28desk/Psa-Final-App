@@ -29,10 +29,12 @@ export function useWebSocket(onMessage?: (message: WebSocketMessage) => void) {
         }
       };
 
-      wsRef.current.onclose = () => {
+      wsRef.current.onclose = (event) => {
         console.log('WebSocket disconnected');
-        // Reconnect after 3 seconds
-        reconnectTimeoutRef.current = setTimeout(connect, 3000);
+        // Only reconnect if not a normal closure and not during development hot reload
+        if (event.code !== 1000 && event.code !== 1001) {
+          reconnectTimeoutRef.current = setTimeout(connect, 3000);
+        }
       };
 
       wsRef.current.onerror = (error) => {

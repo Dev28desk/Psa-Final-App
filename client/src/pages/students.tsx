@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StudentTable } from "@/components/students/student-table";
 import { StudentForm } from "@/components/students/student-form";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useStudentStore } from "@/stores/student-store";
 import { UserPlus, Search, Filter, Download } from "lucide-react";
 
@@ -129,6 +129,9 @@ export default function Students() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add New Student</DialogTitle>
+            <DialogDescription>
+              Fill in the student details to add them to your academy.
+            </DialogDescription>
           </DialogHeader>
           <StudentForm 
             onSuccess={() => setIsAddDialogOpen(false)}

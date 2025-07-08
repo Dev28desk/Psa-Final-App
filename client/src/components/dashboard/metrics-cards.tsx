@@ -65,36 +65,36 @@ export function MetricsCards({ stats }: MetricsCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       {metrics.map((metric) => (
-        <Card key={metric.title} className="hover:shadow-lg transition-shadow duration-200 border-0 shadow-sm">
-          <CardContent className="p-6">
+        <Card key={metric.title} className="hover:shadow-lg transition-shadow duration-200 border-0 shadow-sm dark:bg-gray-800">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-600 truncate">{metric.title}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-2 mb-1">{metric.value}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">{metric.title}</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2 mb-1">{metric.value}</p>
                 <div className="flex items-center">
                   {metric.trend === "up" && (
-                    <TrendingUp className="h-4 w-4 text-green-600 mr-1 flex-shrink-0" />
+                    <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 mr-1 flex-shrink-0" />
                   )}
                   {metric.trend === "down" && (
-                    <TrendingDown className="h-4 w-4 text-red-600 mr-1 flex-shrink-0" />
+                    <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-red-600 mr-1 flex-shrink-0" />
                   )}
-                  <p className={`text-sm truncate ${
+                  <p className={`text-xs sm:text-sm truncate ${
                     metric.trend === "up" ? "text-green-600" : 
-                    metric.trend === "down" ? "text-red-600" : "text-gray-500"
+                    metric.trend === "down" ? "text-red-600" : "text-gray-500 dark:text-gray-400"
                   }`}>
                     {metric.change}
                   </p>
                 </div>
               </div>
-              <div className={`p-3 rounded-xl flex-shrink-0 ${
-                metric.color === "primary" ? "bg-blue-50" :
-                metric.color === "success" ? "bg-green-50" :
-                metric.color === "accent" ? "bg-orange-50" :
-                "bg-red-50"
+              <div className={`p-2 sm:p-3 rounded-xl flex-shrink-0 ${
+                metric.color === "primary" ? "bg-blue-50 dark:bg-blue-900/20" :
+                metric.color === "success" ? "bg-green-50 dark:bg-green-900/20" :
+                metric.color === "accent" ? "bg-orange-50 dark:bg-orange-900/20" :
+                "bg-red-50 dark:bg-red-900/20"
               }`}>
-                <metric.icon className={`h-5 w-5 ${
+                <metric.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${
                   metric.color === "primary" ? "text-primary" :
                   metric.color === "success" ? "text-green-600" :
                   metric.color === "accent" ? "text-accent" :
@@ -112,7 +112,7 @@ export function MetricsCards({ stats }: MetricsCardsProps) {
                 </Link>
               ) : (
                 <>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div 
                       className={`h-2 rounded-full transition-all duration-300 ${
                         metric.color === "primary" ? "bg-primary" :
@@ -124,7 +124,7 @@ export function MetricsCards({ stats }: MetricsCardsProps) {
                     />
                   </div>
                   <Link href={metric.href}>
-                    <Button variant="link" className="p-0 h-auto text-sm text-gray-600 hover:text-primary">
+                    <Button variant="link" className="p-0 h-auto text-xs sm:text-sm text-gray-600 dark:text-gray-400 hover:text-primary">
                       {metric.action}
                     </Button>
                   </Link>

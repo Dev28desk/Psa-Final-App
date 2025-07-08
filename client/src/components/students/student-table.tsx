@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DigitalCard } from "./digital-card";
+import { StudentCard } from "./student-card";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Eye, CreditCard, MessageCircle, Edit, Trash2 } from "lucide-react";
 
 interface Student {
@@ -30,6 +32,7 @@ interface StudentTableProps {
 export function StudentTable({ students, isLoading, sports, batches }: StudentTableProps) {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isCardDialogOpen, setIsCardDialogOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const getSportName = (sportId: number) => {
     return sports.find(s => s.id === sportId)?.name || 'Unknown';
@@ -73,61 +76,75 @@ export function StudentTable({ students, isLoading, sports, batches }: StudentTa
 
   return (
     <>
-      <div className="data-table">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Student
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Contact
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Sport & Batch
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Skill Level
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {students.map((student) => (
-                <tr key={student.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={student.profileImageUrl} alt={student.name} />
-                        <AvatarFallback>
-                          {student.name.split(' ').map(n => n[0]).join('')}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {student.name}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          ID: {student.studentId}
+      {isMobile ? (
+        // Mobile card view
+        <div className="grid grid-cols-1 gap-4">
+          {students.map((student) => (
+            <StudentCard
+              key={student.id}
+              student={student}
+              onEdit={() => {}} // TODO: Implement edit functionality
+              onDelete={() => {}} // TODO: Implement delete functionality
+            />
+          ))}
+        </div>
+      ) : (
+        // Desktop table view
+        <div className="data-table">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Student
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Contact
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Sport & Batch
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Skill Level
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {students.map((student) => (
+                  <tr key={student.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={student.profileImageUrl} alt={student.name} />
+                          <AvatarFallback>
+                            {student.name.split(' ').map(n => n[0]).join('')}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {student.name}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            ID: {student.studentId}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
+                    </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{student.phone}</div>
+                    <div className="text-sm text-gray-900 dark:text-gray-100">{student.phone}</div>
                     {student.email && (
-                      <div className="text-sm text-gray-500">{student.email}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{student.email}</div>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{getSportName(student.sportId)}</div>
-                    <div className="text-sm text-gray-500">{getBatchName(student.batchId)}</div>
+                    <div className="text-sm text-gray-900 dark:text-gray-100">{getSportName(student.sportId)}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{getBatchName(student.batchId)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Badge className={`status-badge ${getSkillLevelColor(student.skillLevel)}`}>
@@ -168,6 +185,7 @@ export function StudentTable({ students, isLoading, sports, batches }: StudentTa
           </table>
         </div>
       </div>
+      )}
 
       {/* Digital Card Dialog */}
       <Dialog open={isCardDialogOpen} onOpenChange={setIsCardDialogOpen}>
