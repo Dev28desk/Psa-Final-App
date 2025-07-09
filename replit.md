@@ -203,3 +203,4 @@ Payment integration: COD collect and Online Payment buttons required in student 
 Dark mode support: Full dark mode implementation across all components.
 GPS tracking: Real-time location tracking with geofencing for coach attendance verification.
 User management: Role-based permission system with limited account creation capabilities.
+Deployment preference: VPS deployment for full control and cost-effectiveness over managed hosting.
