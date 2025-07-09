@@ -38,7 +38,7 @@ export function StudentCard({ student, onEdit, onDelete }: StudentCardProps) {
             {student.email}
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            Joined: {format(new Date(student.joinDate), "MMM dd, yyyy")}
+            Joined: {student.joiningDate ? format(new Date(student.joiningDate), "MMM dd, yyyy") : "N/A"}
           </div>
         </div>
 
