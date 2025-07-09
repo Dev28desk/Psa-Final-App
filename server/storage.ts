@@ -263,6 +263,103 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(permissions).orderBy(asc(permissions.category), asc(permissions.name));
   }
 
+  // Mobile-specific methods
+  async getStudentByPhone(phone: string): Promise<Student | undefined> {
+    const [student] = await db.select().from(students).where(eq(students.phone, phone));
+    return student;
+  }
+
+  async getCoachByPhone(phone: string): Promise<Coach | undefined> {
+    const [coach] = await db.select().from(coaches).where(eq(coaches.phone, phone));
+    return coach;
+  }
+
+  async getStudentsByCoach(coachId: number): Promise<Student[]> {
+    return await db.select().from(students).where(eq(students.coachId, coachId));
+  }
+
+  async getBatchesByCoach(coachId: number): Promise<Batch[]> {
+    return await db.select().from(batches).where(eq(batches.coachId, coachId));
+  }
+
+  async getTodayAttendanceByCoach(coachId: number): Promise<any[]> {
+    const today = new Date().toISOString().split('T')[0];
+    return await db.select().from(attendance).where(eq(attendance.date, today));
+  }
+
+  async getWeeklyClassesByCoach(coachId: number): Promise<any[]> {
+    // Simplified implementation
+    return await db.select().from(batches).where(eq(batches.coachId, coachId));
+  }
+
+  async getTodayClassesByCoach(coachId: number): Promise<any[]> {
+    // Simplified implementation
+    return await db.select().from(batches).where(eq(batches.coachId, coachId));
+  }
+
+  async getRecentAttendanceByCoach(coachId: number): Promise<any[]> {
+    // Simplified implementation
+    return await db.select().from(attendance).limit(10);
+  }
+
+  async getStudentAttendanceStats(studentId: number): Promise<any> {
+    const totalAttendance = await db.select().from(attendance).where(eq(attendance.studentId, studentId));
+    const presentCount = totalAttendance.filter(a => a.status === 'present').length;
+    const percentage = totalAttendance.length > 0 ? Math.round((presentCount / totalAttendance.length) * 100) : 0;
+    
+    return {
+      totalClasses: totalAttendance.length,
+      percentage,
+      presentCount
+    };
+  }
+
+  async getStudentPaymentStats(studentId: number): Promise<any> {
+    const payments = await db.select().from(payments).where(eq(payments.studentId, studentId));
+    const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+    const pendingPayments = payments.filter(p => p.status === 'pending');
+    const upcomingAmount = pendingPayments.reduce((sum, p) => sum + p.amount, 0);
+    
+    return {
+      totalPaid,
+      upcomingAmount
+    };
+  }
+
+  async getStudentBadgeStats(studentId: number): Promise<any> {
+    const badges = await db.select().from(studentBadges).where(eq(studentBadges.studentId, studentId));
+    const points = await db.select().from(studentPoints).where(eq(studentPoints.studentId, studentId));
+    
+    return {
+      totalBadges: badges.length,
+      totalPoints: points[0]?.totalPoints || 0,
+      currentLevel: points[0]?.level || 1
+    };
+  }
+
+  async getUpcomingClassesByStudent(studentId: number): Promise<any[]> {
+    const student = await this.getStudent(studentId);
+    if (!student?.batchId) return [];
+    
+    return await db.select().from(batches).where(eq(batches.id, student.batchId));
+  }
+
+  async getRecentBadgesByStudent(studentId: number): Promise<any[]> {
+    return await db.select().from(studentBadges).where(eq(studentBadges.studentId, studentId)).limit(5);
+  }
+
+  async getStudentAttendanceHistory(studentId: number): Promise<any[]> {
+    return await db.select().from(attendance).where(eq(attendance.studentId, studentId)).limit(50);
+  }
+
+  async getStudentPaymentHistory(studentId: number): Promise<any[]> {
+    return await db.select().from(payments).where(eq(payments.studentId, studentId)).limit(50);
+  }
+
+  async getStudentAchievements(studentId: number): Promise<any[]> {
+    return await db.select().from(studentBadges).where(eq(studentBadges.studentId, studentId));
+  }
+
   // Coach operations
   async getCoach(id: number): Promise<Coach | undefined> {
     const [coach] = await db.select().from(coaches).where(eq(coaches.id, id));

@@ -21,6 +21,7 @@ import UserManagement from "@/pages/user-management";
 import GPSTracking from "@/pages/gps-tracking";
 import StudentBadges from "@/pages/student-badges";
 import NotFound from "@/pages/not-found";
+import MobileApp from "@/mobile/App";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 
@@ -61,6 +62,7 @@ function Router() {
               <Route path="/user-management" component={UserManagement} />
               <Route path="/gps-tracking" component={GPSTracking} />
               <Route path="/student-badges" component={StudentBadges} />
+              <Route path="/mobile/:rest*" component={MobileApp} />
               <Route component={NotFound} />
             </Switch>
           </div>
