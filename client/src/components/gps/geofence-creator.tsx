@@ -34,6 +34,7 @@ export const GeofenceCreator: React.FC<GeofenceCreatorProps> = ({ onGeofenceCrea
   const [description, setDescription] = useState('');
   const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const circleRef = useRef<any>(null);
@@ -44,51 +45,84 @@ export const GeofenceCreator: React.FC<GeofenceCreatorProps> = ({ onGeofenceCrea
   // Load Google Maps API
   useEffect(() => {
     if (!window.google) {
+      console.log('Loading Google Maps API...');
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=geometry`;
       script.async = true;
       script.defer = true;
       script.onload = () => {
+        console.log('Google Maps API loaded successfully');
         setIsMapLoaded(true);
+      };
+      script.onerror = (error) => {
+        console.error('Error loading Google Maps API:', error);
+        setMapError('Failed to load Google Maps. Please check your internet connection.');
+        toast({
+          title: "Map Loading Error",
+          description: "Failed to load Google Maps. Please check your internet connection.",
+          variant: "destructive",
+        });
       };
       document.head.appendChild(script);
     } else {
+      console.log('Google Maps API already loaded');
       setIsMapLoaded(true);
     }
   }, []);
 
   // Initialize map when dialog opens
   useEffect(() => {
+    console.log('Dialog state:', { isOpen, isMapLoaded, hasMapRef: !!mapRef.current, hasMapInstance: !!mapInstanceRef.current });
     if (isOpen && isMapLoaded && mapRef.current && !mapInstanceRef.current) {
-      initializeMap();
+      console.log('Initializing map...');
+      // Add a small delay to ensure the DOM is fully rendered
+      setTimeout(() => {
+        initializeMap();
+      }, 100);
     }
   }, [isOpen, isMapLoaded]);
 
   const initializeMap = () => {
-    if (!mapRef.current || !window.google) return;
+    if (!mapRef.current || !window.google) {
+      console.error('Map initialization failed: missing elements');
+      return;
+    }
 
-    const map = new window.google.maps.Map(mapRef.current, {
-      center: mapCenter,
-      zoom: 16,
-      mapTypeId: 'hybrid',
-      disableDefaultUI: false,
-      zoomControl: true,
-      streetViewControl: false,
-      fullscreenControl: false,
-    });
+    try {
+      console.log('Creating Google Maps instance...');
+      const map = new window.google.maps.Map(mapRef.current, {
+        center: mapCenter,
+        zoom: 16,
+        mapTypeId: 'hybrid',
+        disableDefaultUI: false,
+        zoomControl: true,
+        streetViewControl: false,
+        fullscreenControl: false,
+      });
 
-    mapInstanceRef.current = map;
+      mapInstanceRef.current = map;
+      console.log('Google Maps instance created successfully');
 
-    // Add click listener to map
-    map.addListener('click', (event: any) => {
-      const lat = event.latLng.lat();
-      const lng = event.latLng.lng();
-      setMapCenter({ lat, lng });
-      updateMapMarkers(map, { lat, lng });
-    });
+      // Add click listener to map
+      map.addListener('click', (event: any) => {
+        const lat = event.latLng.lat();
+        const lng = event.latLng.lng();
+        console.log('Map clicked at:', lat, lng);
+        setMapCenter({ lat, lng });
+        updateMapMarkers(map, { lat, lng });
+      });
 
-    // Initialize markers
-    updateMapMarkers(map, mapCenter);
+      // Initialize markers
+      updateMapMarkers(map, mapCenter);
+    } catch (error) {
+      console.error('Error initializing Google Maps:', error);
+      setMapError('Failed to initialize Google Maps. Please try again.');
+      toast({
+        title: "Map Initialization Error",
+        description: "Failed to initialize Google Maps. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const updateMapMarkers = (map: any, center: { lat: number; lng: number }) => {
@@ -247,9 +281,48 @@ export const GeofenceCreator: React.FC<GeofenceCreatorProps> = ({ onGeofenceCrea
 
 
 
+  const retryMapLoad = () => {
+    setMapError(null);
+    setIsMapLoaded(false);
+    mapInstanceRef.current = null;
+    
+    // Remove existing script and reload
+    const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+    if (existingScript) {
+      existingScript.remove();
+    }
+    
+    // Reload Google Maps API
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=geometry`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      console.log('Google Maps API reloaded successfully');
+      setIsMapLoaded(true);
+    };
+    script.onerror = (error) => {
+      console.error('Error reloading Google Maps API:', error);
+      setMapError('Failed to load Google Maps. Please check your internet connection.');
+    };
+    document.head.appendChild(script);
+  };
+
   const MapDisplay = () => (
     <div className="relative">
-      {!isMapLoaded ? (
+      {mapError ? (
+        <div className="w-full h-80 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950 dark:to-orange-950 rounded-lg border border-red-200 dark:border-red-700 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
+              <X className="w-6 h-6 text-red-600 dark:text-red-400" />
+            </div>
+            <p className="text-sm font-medium text-red-800 dark:text-red-200 mb-4">{mapError}</p>
+            <Button onClick={retryMapLoad} size="sm" variant="outline" className="border-red-300 dark:border-red-600 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900">
+              Try Again
+            </Button>
+          </div>
+        </div>
+      ) : !isMapLoaded ? (
         <div className="w-full h-80 bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-950 dark:to-green-950 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin w-8 h-8 border-4 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full mx-auto mb-4" />
