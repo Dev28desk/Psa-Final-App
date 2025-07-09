@@ -334,3 +334,51 @@ function calculateRetentionMetrics(students: any[], payments: any[], attendance:
     attendanceTrends
   };
 }
+
+export async function generateAIResponse(query: string) {
+  try {
+    // Get relevant data based on query context
+    const [students, payments, attendance, revenueStats] = await Promise.all([
+      storage.getStudents(),
+      storage.getPayments(),
+      storage.getAttendanceStats(),
+      storage.getRevenueStats(),
+    ]);
+
+    const prompt = `
+    You are an AI assistant for Parmanand Sports Academy. Answer the following question based on the academy data:
+
+    Query: ${query}
+
+    Academy Data:
+    - Students: ${Array.isArray(students) ? students.length : students?.students?.length || 0} total students
+    - Revenue Stats: Total: ₹${revenueStats.total}, This Month: ₹${revenueStats.thisMonth}, Growth: ${revenueStats.growth}%
+    - Attendance: ${attendance.percentage}% average attendance
+    - Recent Payments: ${Array.isArray(payments) ? payments.length : payments?.payments?.length || 0} payment records
+
+    Please provide a helpful, specific answer based on this data. Be conversational and actionable.
+    Keep your response concise but informative.
+
+    Format your response as JSON with:
+    {
+      "answer": "your detailed response here",
+      "suggestions": ["actionable suggestion 1", "actionable suggestion 2"],
+      "confidence": 85
+    }
+    `;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+    });
+
+    // Clean up the response to remove markdown formatting
+    let cleanedResponse = response.text || "{}";
+    cleanedResponse = cleanedResponse.replace(/```json\s*/, '').replace(/```\s*$/, '');
+    
+    return JSON.parse(cleanedResponse);
+  } catch (error) {
+    console.error("AI Response Error:", error);
+    throw new Error("Failed to generate AI response");
+  }
+}

@@ -28,6 +28,8 @@ import {
 
 export default function AIInsights() {
   const [query, setQuery] = useState("");
+  const [queryResponse, setQueryResponse] = useState<any>(null);
+  const [isQueryLoading, setIsQueryLoading] = useState(false);
   const { toast } = useToast();
 
   const { data: studentInsights, isLoading: studentLoading } = useQuery({
@@ -51,6 +53,43 @@ export default function AIInsights() {
   });
 
   const isLoading = studentLoading || revenueLoading || attendanceLoading || retentionLoading;
+
+  const handleSendQuery = async () => {
+    if (!query.trim() || isQueryLoading) return;
+    
+    setIsQueryLoading(true);
+    try {
+      const response = await fetch('/api/ai-insights/query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get AI response');
+      }
+
+      const data = await response.json();
+      setQueryResponse(data);
+      setQuery("");
+      
+      toast({
+        title: "AI Response",
+        description: "Your query has been processed successfully!",
+      });
+    } catch (error) {
+      console.error('Error sending query:', error);
+      toast({
+        title: "Error",
+        description: "Failed to process your query. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsQueryLoading(false);
+    }
+  };
 
   const handleViewDetailedAnalysis = () => {
     if (isLoading) {
@@ -168,15 +207,8 @@ export default function AIInsights() {
     "Suggest new sports based on market demand"
   ];
 
-  const handleSendQuery = async () => {
-    if (!query.trim()) return;
-    
-    toast({
-      title: "AI Processing",
-      description: "Analyzing your query with AI insights...",
-    });
-    
-    setQuery("");
+  const handleSuggestedQuery = (suggestedQuery: string) => {
+    setQuery(suggestedQuery);
   };
 
   const getImpactBadge = (impact: string) => {
@@ -229,16 +261,52 @@ export default function AIInsights() {
               />
               <Button 
                 onClick={handleSendQuery}
-                disabled={!query.trim() || isLoading}
+                disabled={!query.trim() || isQueryLoading}
                 className="bg-accent hover:bg-accent/90"
               >
-                {isLoading ? (
+                {isQueryLoading ? (
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 ) : (
                   <Send className="h-4 w-4" />
                 )}
               </Button>
             </div>
+            
+            {/* AI Assistant Reply Section */}
+            {queryResponse && (
+              <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border">
+                <div className="flex items-center space-x-2 mb-3">
+                  <Brain className="h-5 w-5 text-accent" />
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100">AI Assistant Reply</h4>
+                  <Badge variant="outline" className="text-xs">
+                    {queryResponse.confidence}% confidence
+                  </Badge>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="text-gray-700 dark:text-gray-300">
+                    {queryResponse.answer}
+                  </div>
+                  
+                  {queryResponse.suggestions && queryResponse.suggestions.length > 0 && (
+                    <div>
+                      <h5 className="font-medium text-gray-900 dark:text-gray-100 mb-2 flex items-center space-x-1">
+                        <Target className="h-4 w-4" />
+                        <span>Suggested Actions:</span>
+                      </h5>
+                      <ul className="space-y-1">
+                        {queryResponse.suggestions.map((suggestion: string, index: number) => (
+                          <li key={index} className="flex items-start space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>{suggestion}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
             
             <div>
               <p className="text-sm text-gray-600 mb-2">Suggested queries:</p>
@@ -248,7 +316,7 @@ export default function AIInsights() {
                     key={index}
                     variant="outline"
                     size="sm"
-                    onClick={() => setQuery(suggestion)}
+                    onClick={() => handleSuggestedQuery(suggestion)}
                     className="text-xs"
                   >
                     {suggestion}

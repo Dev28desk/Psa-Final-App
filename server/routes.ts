@@ -833,6 +833,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/ai-insights/query", async (req, res) => {
+    try {
+      const { query } = req.body;
+      if (!query) {
+        return res.status(400).json({ error: "Query is required" });
+      }
+      
+      const { generateAIResponse } = await import("./ai-insights");
+      const response = await generateAIResponse(query);
+      res.json(response);
+    } catch (error: any) {
+      console.error("AI query error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Badges API endpoints
   app.get("/api/badges", async (req, res) => {
     try {
