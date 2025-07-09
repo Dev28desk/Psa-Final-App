@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "610461935332",
+    "project_id": "psa-nashik-app",
+    "storage_bucket": "psa-nashik-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:610461935332:android:cffd908cfb9223a1196ef1",
+        "android_client_info": {
+          "package_name": "com.psa.coatch"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3MfQc7tnOz4HuroRPHn6iEOp4xnpGUDs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:610461935332:android:71f9b8cb8d3b64a0196ef1",
+        "android_client_info": {
+          "package_name": "com.psanashik.user"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3MfQc7tnOz4HuroRPHn6iEOp4xnpGUDs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
