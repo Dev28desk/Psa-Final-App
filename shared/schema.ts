@@ -570,7 +570,7 @@ export const badges = pgTable("badges", {
   icon: text("icon").notNull(),
   color: text("color").notNull(),
   category: text("category").notNull(), // attendance, payment, performance, milestones
-  criteria: jsonb("criteria").notNull(), // JSON object with achievement criteria
+  requirements: jsonb("requirements").notNull(), // JSON object with achievement requirements
   points: integer("points").notNull().default(0),
   rarity: text("rarity").notNull().default("common"), // common, rare, epic, legendary
   isActive: boolean("is_active").notNull().default(true),

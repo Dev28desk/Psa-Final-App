@@ -415,7 +415,7 @@ export default function AdvancedReports() {
                             <SelectValue placeholder="Aggregate" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">None</SelectItem>
+                            <SelectItem value="none">None</SelectItem>
                             {AGGREGATES.map(agg => (
                               <SelectItem key={agg.value} value={agg.value}>{agg.label}</SelectItem>
                             ))}

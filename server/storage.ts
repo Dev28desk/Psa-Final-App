@@ -1,6 +1,6 @@
 import { 
   users, coaches, students, sports, batches, payments, attendance, activities, communications, settings, icons, paymentGateways,
-  campaigns, campaignMessages, messageTemplates, badges, studentBadges, studentPoints, achievementHistory,
+  campaigns, campaignMessages, messageTemplates, badges, studentBadges, studentPoints, achievementHistory, permissions,
   type User, type InsertUser, type Coach, type InsertCoach, type Student, type InsertStudent, type Sport, type InsertSport,
   type Batch, type InsertBatch, type Payment, type InsertPayment, type Attendance, type InsertAttendance,
   type Activity, type InsertActivity, type Communication, type InsertCommunication,
@@ -16,9 +16,15 @@ import { eq, desc, asc, and, or, gte, lte, count, sum, avg, like, sql } from "dr
 export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
+  getUsers(): Promise<User[]>;
   getUserByPhone(phone: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined>;
+  updateUserRole(id: number, role: string): Promise<User | undefined>;
+  updateUserPermissions(id: number, permissions: string[]): Promise<User | undefined>;
+  activateUser(id: number): Promise<User | undefined>;
+  deactivateUser(id: number): Promise<User | undefined>;
+  getPermissions(): Promise<any[]>;
 
   // Coach operations
   getCoach(id: number): Promise<Coach | undefined>;
@@ -227,6 +233,34 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user;
+  }
+
+  async getUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(asc(users.name));
+  }
+
+  async updateUserRole(id: number, role: string): Promise<User | undefined> {
+    const [user] = await db.update(users).set({ role }).where(eq(users.id, id)).returning();
+    return user;
+  }
+
+  async updateUserPermissions(id: number, permissions: string[]): Promise<User | undefined> {
+    const [user] = await db.update(users).set({ permissions }).where(eq(users.id, id)).returning();
+    return user;
+  }
+
+  async activateUser(id: number): Promise<User | undefined> {
+    const [user] = await db.update(users).set({ isActive: true }).where(eq(users.id, id)).returning();
+    return user;
+  }
+
+  async deactivateUser(id: number): Promise<User | undefined> {
+    const [user] = await db.update(users).set({ isActive: false }).where(eq(users.id, id)).returning();
+    return user;
+  }
+
+  async getPermissions(): Promise<any[]> {
+    return await db.select().from(permissions).orderBy(asc(permissions.category), asc(permissions.name));
   }
 
   // Coach operations

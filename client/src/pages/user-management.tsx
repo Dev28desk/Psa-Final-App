@@ -57,7 +57,7 @@ export default function UserManagement() {
     role: "student",
     permissions: [] as string[]
   });
-  const [selectedRole, setSelectedRole] = useState("");
+  const [selectedRole, setSelectedRole] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   
   const { toast } = useToast();
@@ -166,7 +166,7 @@ export default function UserManagement() {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.phone.includes(searchTerm);
-    const matchesRole = selectedRole === "" || user.role === selectedRole;
+    const matchesRole = selectedRole === "all" || selectedRole === "" || user.role === selectedRole;
     return matchesSearch && matchesRole;
   });
 
@@ -293,7 +293,7 @@ export default function UserManagement() {
                   <SelectValue placeholder="Filter by role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Roles</SelectItem>
+                  <SelectItem value="all">All Roles</SelectItem>
                   {USER_ROLES.map(role => (
                     <SelectItem key={role.value} value={role.value}>
                       {role.label}

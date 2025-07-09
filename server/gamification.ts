@@ -34,7 +34,7 @@ export class GamificationService {
         icon: "trophy",
         color: "gold",
         category: "attendance",
-        criteria: {
+        requirements: {
           type: "attendance",
           operator: "streak",
           value: 30,
@@ -49,7 +49,7 @@ export class GamificationService {
         icon: "clock",
         color: "blue",
         category: "attendance",
-        criteria: {
+        requirements: {
           type: "attendance",
           operator: "streak",
           value: 10,
@@ -64,7 +64,7 @@ export class GamificationService {
         icon: "star",
         color: "green",
         category: "attendance",
-        criteria: {
+        requirements: {
           type: "attendance",
           operator: "greater",
           value: 95,
@@ -81,7 +81,7 @@ export class GamificationService {
         icon: "credit-card",
         color: "emerald",
         category: "payment",
-        criteria: {
+        requirements: {
           type: "payment",
           operator: "streak",
           value: 6,
@@ -96,7 +96,7 @@ export class GamificationService {
         icon: "wallet",
         color: "purple",
         category: "payment",
-        criteria: {
+        requirements: {
           type: "payment",
           operator: "equals",
           value: 0,
@@ -113,7 +113,7 @@ export class GamificationService {
         icon: "award",
         color: "orange",
         category: "performance",
-        criteria: {
+        requirements: {
           type: "performance",
           operator: "equals",
           value: 5,
@@ -128,7 +128,7 @@ export class GamificationService {
         icon: "trending-up",
         color: "yellow",
         category: "performance",
-        criteria: {
+        requirements: {
           type: "performance",
           operator: "greater",
           value: 3,
@@ -145,7 +145,7 @@ export class GamificationService {
         icon: "heart",
         color: "red",
         category: "milestone",
-        criteria: {
+        requirements: {
           type: "milestone",
           operator: "greater",
           value: 365,
@@ -160,7 +160,7 @@ export class GamificationService {
         icon: "book",
         color: "indigo",
         category: "milestone",
-        criteria: {
+        requirements: {
           type: "milestone",
           operator: "greater",
           value: 100,
@@ -175,7 +175,7 @@ export class GamificationService {
         icon: "user-plus",
         color: "cyan",
         category: "milestone",
-        criteria: {
+        requirements: {
           type: "milestone",
           operator: "greater",
           value: 7,
@@ -229,7 +229,7 @@ export class GamificationService {
   }
 
   private async evaluateBadgeCondition(studentId: number, badge: Badge, eventType: string, data: any): Promise<boolean> {
-    const criteria = badge.criteria as BadgeCondition;
+    const criteria = badge.requirements as BadgeCondition;
     
     switch (criteria.type) {
       case 'attendance':
@@ -245,7 +245,7 @@ export class GamificationService {
     }
   }
 
-  private async evaluateAttendanceCriteria(studentId: number, criteria: BadgeCondition): Promise<boolean> {
+  private async evaluateAttendanceCriteria(studentId: number, requirements: BadgeCondition): Promise<boolean> {
     const attendanceData = await storage.getStudentAttendance(studentId);
     
     if (criteria.operator === 'streak') {
@@ -261,7 +261,7 @@ export class GamificationService {
     return false;
   }
 
-  private async evaluatePaymentCriteria(studentId: number, criteria: BadgeCondition): Promise<boolean> {
+  private async evaluatePaymentCriteria(studentId: number, requirements: BadgeCondition): Promise<boolean> {
     const paymentData = await storage.getStudentPayments(studentId);
     
     if (criteria.operator === 'streak') {
@@ -277,7 +277,7 @@ export class GamificationService {
     return false;
   }
 
-  private async evaluatePerformanceCriteria(studentId: number, criteria: BadgeCondition): Promise<boolean> {
+  private async evaluatePerformanceCriteria(studentId: number, requirements: BadgeCondition): Promise<boolean> {
     const student = await storage.getStudent(studentId);
     
     if (criteria.operator === 'equals') {
@@ -292,7 +292,7 @@ export class GamificationService {
     return false;
   }
 
-  private async evaluateMilestoneCriteria(studentId: number, criteria: BadgeCondition): Promise<boolean> {
+  private async evaluateMilestoneCriteria(studentId: number, requirements: BadgeCondition): Promise<boolean> {
     const student = await storage.getStudent(studentId);
     
     if (criteria.operator === 'greater') {
