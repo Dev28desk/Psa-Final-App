@@ -130,11 +130,16 @@ export default function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 h-auto">
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-7 h-auto">
           <TabsTrigger value="general" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
             <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="hidden sm:inline">General</span>
             <span className="sm:hidden">Gen</span>
+          </TabsTrigger>
+          <TabsTrigger value="api-keys" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Key className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">API Keys</span>
+            <span className="sm:hidden">API</span>
           </TabsTrigger>
           <TabsTrigger value="payments" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
             <CreditCard className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -597,6 +602,53 @@ export default function SettingsPage() {
                     </div>
                     <div className="text-sm text-gray-500">
                       <p>Need help setting up? <a href="/WHATSAPP_SETUP_GUIDE.md" target="_blank" className="text-blue-600 hover:underline">View Setup Guide</a></p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="font-semibold">Firebase Configuration</h3>
+                      <p className="text-sm text-gray-500">For phone authentication and notifications</p>
+                    </div>
+                    <Badge variant={settings?.firebase_api_key ? "secondary" : "outline"}>
+                      {settings?.firebase_api_key ? "Active" : "Inactive"}
+                    </Badge>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firebase-api-key">Firebase API Key</Label>
+                      <Input 
+                        id="firebase-api-key" 
+                        type="password"
+                        placeholder="Enter your Firebase API key"
+                        value={settings?.firebase_api_key || ''}
+                        onChange={(e) => handleSettingChange('firebase_api_key', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="firebase-auth-domain">Auth Domain</Label>
+                      <Input 
+                        id="firebase-auth-domain" 
+                        type="text"
+                        placeholder="your-project.firebaseapp.com"
+                        value={settings?.firebase_auth_domain || ''}
+                        onChange={(e) => handleSettingChange('firebase_auth_domain', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="firebase-project-id">Project ID</Label>
+                      <Input 
+                        id="firebase-project-id" 
+                        type="text"
+                        placeholder="your-project-id"
+                        value={settings?.firebase_project_id || ''}
+                        onChange={(e) => handleSettingChange('firebase_project_id', e.target.value)}
+                      />
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      <p>Used for phone authentication and push notifications</p>
                     </div>
                   </div>
                 </div>
