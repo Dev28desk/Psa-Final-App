@@ -14,6 +14,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { GeofenceCreator } from "@/components/gps/geofence-creator";
 
 interface LocationData {
   id: number;
@@ -61,16 +62,8 @@ interface LocationState {
 
 export default function GPSTracking() {
   const [selectedTab, setSelectedTab] = useState("live");
-  const [isCreateGeofenceOpen, setIsCreateGeofenceOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<LocationState | null>(null);
   const [isTracking, setIsTracking] = useState(false);
-  const [newGeofence, setNewGeofence] = useState({
-    name: "",
-    description: "",
-    centerLatitude: "",
-    centerLongitude: "",
-    radius: 100
-  });
   const [selectedCoach, setSelectedCoach] = useState("");
   const [selectedBatch, setSelectedBatch] = useState("");
   const [watchId, setWatchId] = useState<number | null>(null);
@@ -202,22 +195,7 @@ export default function GPSTracking() {
     }
   });
 
-  // Create geofence mutation
-  const createGeofenceMutation = useMutation({
-    mutationFn: async (geofenceData: any) => {
-      const response = await apiRequest("POST", "/api/geofences", geofenceData);
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({ title: "Geofence created successfully" });
-      queryClient.invalidateQueries({ queryKey: ["/api/geofences"] });
-      setIsCreateGeofenceOpen(false);
-      setNewGeofence({ name: "", description: "", centerLatitude: "", centerLongitude: "", radius: 100 });
-    },
-    onError: (error: Error) => {
-      toast({ title: "Error creating geofence", description: error.message, variant: "destructive" });
-    }
-  });
+
 
   // Coach check-in mutation
   const checkInMutation = useMutation({
@@ -269,27 +247,7 @@ export default function GPSTracking() {
     }
   });
 
-  const handleCreateGeofence = () => {
-    if (!newGeofence.name || !newGeofence.centerLatitude || !newGeofence.centerLongitude) {
-      toast({ title: "Please fill in all required fields", variant: "destructive" });
-      return;
-    }
-    
-    createGeofenceMutation.mutate({
-      ...newGeofence,
-      createdBy: 1 // This should be the current user's ID
-    });
-  };
 
-  const useCurrentLocation = () => {
-    if (currentLocation) {
-      setNewGeofence(prev => ({
-        ...prev,
-        centerLatitude: currentLocation.latitude.toString(),
-        centerLongitude: currentLocation.longitude.toString()
-      }));
-    }
-  };
 
   return (
     <div className="flex flex-col gap-8 p-4 md:p-8">
@@ -318,97 +276,9 @@ export default function GPSTracking() {
               </>
             )}
           </Button>
-          <Dialog open={isCreateGeofenceOpen} onOpenChange={setIsCreateGeofenceOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                Create Geofence
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Geofence</DialogTitle>
-                <DialogDescription>
-                  Define a geographical boundary for attendance verification
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="geofence-name">Name *</Label>
-                  <Input
-                    id="geofence-name"
-                    value={newGeofence.name}
-                    onChange={(e) => setNewGeofence(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="e.g., Academy Main Ground"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="geofence-description">Description</Label>
-                  <Input
-                    id="geofence-description"
-                    value={newGeofence.description}
-                    onChange={(e) => setNewGeofence(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Optional description"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="geofence-lat">Latitude *</Label>
-                    <Input
-                      id="geofence-lat"
-                      value={newGeofence.centerLatitude}
-                      onChange={(e) => setNewGeofence(prev => ({ ...prev, centerLatitude: e.target.value }))}
-                      placeholder="e.g., 28.6139"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="geofence-lng">Longitude *</Label>
-                    <Input
-                      id="geofence-lng"
-                      value={newGeofence.centerLongitude}
-                      onChange={(e) => setNewGeofence(prev => ({ ...prev, centerLongitude: e.target.value }))}
-                      placeholder="e.g., 77.2090"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="geofence-radius">Radius (meters)</Label>
-                  <Input
-                    id="geofence-radius"
-                    type="number"
-                    value={newGeofence.radius}
-                    onChange={(e) => setNewGeofence(prev => ({ ...prev, radius: parseInt(e.target.value) }))}
-                    placeholder="100"
-                  />
-                </div>
-
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={useCurrentLocation}
-                    disabled={!currentLocation}
-                    className="flex items-center gap-2"
-                  >
-                    <Navigation className="h-4 w-4" />
-                    Use Current Location
-                  </Button>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleCreateGeofence}
-                    disabled={createGeofenceMutation.isPending}
-                  >
-                    Create Geofence
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <GeofenceCreator onGeofenceCreated={() => {
+            queryClient.invalidateQueries({ queryKey: ['/api/geofences'] });
+          }} />
         </div>
       </div>
 
