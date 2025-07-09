@@ -46,6 +46,7 @@ function MobileAppRouter() {
       <Switch>
         <Route path="/mobile/login" component={MobileLogin} />
         <Route path="/mobile" component={AppSelector} />
+        <Route path="/mobile/*" component={AppSelector} />
         <Route>
           <AppSelector />
         </Route>
@@ -58,6 +59,9 @@ function MobileAppRouter() {
       <Route path="/mobile/coach" component={CoachApp} />
       <Route path="/mobile/student" component={StudentApp} />
       <Route path="/mobile">
+        {userType === 'coach' ? <CoachApp /> : <StudentApp />}
+      </Route>
+      <Route path="/mobile/*">
         {userType === 'coach' ? <CoachApp /> : <StudentApp />}
       </Route>
       <Route>

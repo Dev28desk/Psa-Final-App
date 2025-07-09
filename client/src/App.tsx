@@ -62,6 +62,7 @@ function Router() {
               <Route path="/user-management" component={UserManagement} />
               <Route path="/gps-tracking" component={GPSTracking} />
               <Route path="/student-badges" component={StudentBadges} />
+              <Route path="/mobile" component={MobileApp} />
               <Route path="/mobile/:rest*" component={MobileApp} />
               <Route component={NotFound} />
             </Switch>
