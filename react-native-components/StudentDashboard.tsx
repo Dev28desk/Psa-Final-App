@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import Icon from 'react-native-vector-icons/Feather';
@@ -63,9 +64,16 @@ const StudentDashboard: React.FC = () => {
       {/* Welcome Card */}
       <View style={styles.welcomeCard}>
         <View style={styles.welcomeContent}>
-          <View>
-            <Text style={styles.welcomeTitle}>Welcome back!</Text>
-            <Text style={styles.welcomeSubtitle}>Ready for today's training?</Text>
+          <View style={styles.welcomeLeft}>
+            <Image
+              source={require('./assets/psa-logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <View>
+              <Text style={styles.welcomeTitle}>Welcome back!</Text>
+              <Text style={styles.welcomeSubtitle}>Ready for today's training?</Text>
+            </View>
           </View>
           <View style={styles.levelInfo}>
             <Text style={styles.levelValue}>Level {stats.currentLevel}</Text>
@@ -272,6 +280,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  welcomeLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  logo: {
+    width: 40,
+    height: 40,
+    marginRight: 12,
   },
   welcomeTitle: {
     fontSize: 20,

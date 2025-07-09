@@ -68,8 +68,12 @@ export default function CoachApp() {
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                <Users className="h-5 w-5 text-white" />
+              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm">
+                <img 
+                  src="/src/assets/psa-logo.png" 
+                  alt="PSA Logo" 
+                  className="w-8 h-8 object-contain"
+                />
               </div>
               <div>
                 <h1 className="font-semibold text-gray-900 dark:text-white">

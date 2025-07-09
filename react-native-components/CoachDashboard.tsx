@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import Icon from 'react-native-vector-icons/Feather';
@@ -65,6 +66,27 @@ const CoachDashboard: React.FC = () => {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Welcome Card */}
+      <View style={styles.welcomeCard}>
+        <View style={styles.welcomeContent}>
+          <View style={styles.welcomeLeft}>
+            <Image
+              source={require('./assets/psa-logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <View>
+              <Text style={styles.welcomeTitle}>Welcome back, Coach!</Text>
+              <Text style={styles.welcomeSubtitle}>Ready to train champions?</Text>
+            </View>
+          </View>
+          <View style={styles.activeIndicator}>
+            <View style={styles.statusDot} />
+            <Text style={styles.statusText}>Active</Text>
+          </View>
+        </View>
+      </View>
+
       {/* Quick Stats */}
       <View style={styles.statsContainer}>
         <View style={styles.statsGrid}>
@@ -212,6 +234,63 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     color: '#666',
+  },
+  welcomeCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginVertical: 16,
+    marginHorizontal: 16,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  welcomeContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  welcomeLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  logo: {
+    width: 40,
+    height: 40,
+    marginRight: 12,
+  },
+  welcomeTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  welcomeSubtitle: {
+    fontSize: 14,
+    color: '#666',
+  },
+  activeIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E8',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#4CAF50',
+    marginRight: 6,
+  },
+  statusText: {
+    fontSize: 12,
+    color: '#4CAF50',
+    fontWeight: '600',
   },
   statsContainer: {
     padding: 16,

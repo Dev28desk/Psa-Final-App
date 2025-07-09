@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
@@ -62,10 +63,14 @@ const LoginScreen: React.FC = () => {
       >
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <Icon name="smartphone" size={48} color="#0066cc" />
+            <Image
+              source={require('./assets/psa-logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
           </View>
           <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Sign in to your account</Text>
+          <Text style={styles.subtitle}>Sign in to Parmanand Sports Academy</Text>
         </View>
 
         <View style={styles.form}>
@@ -209,6 +214,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
+  },
+  logo: {
+    width: 60,
+    height: 60,
   },
   title: {
     fontSize: 28,

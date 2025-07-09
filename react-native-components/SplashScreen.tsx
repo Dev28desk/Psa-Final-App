@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   StatusBar,
+  Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 
@@ -15,7 +16,11 @@ const SplashScreen: React.FC = () => {
       
       <View style={styles.content}>
         <View style={styles.logoContainer}>
-          <Icon name="smartphone" size={64} color="#fff" />
+          <Image
+            source={require('./assets/psa-logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
         </View>
         
         <Text style={styles.title}>Parmanand Sports Academy</Text>
@@ -57,6 +62,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 30,
+  },
+  logo: {
+    width: 80,
+    height: 80,
   },
   title: {
     fontSize: 28,

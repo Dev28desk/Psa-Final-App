@@ -83,8 +83,12 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileToggle }:
         <div className={`flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 ${isCollapsed ? 'px-2' : ''}`}>
           {!isCollapsed && (
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Trophy className="h-4 w-4 text-white" />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+                <img 
+                  src="/src/assets/psa-logo.png" 
+                  alt="PSA Logo" 
+                  className="w-8 h-8 object-contain"
+                />
               </div>
               <div className="hidden lg:block">
                 <h1 className="text-sm font-bold text-gray-900 dark:text-gray-100">Parmanand Sports</h1>

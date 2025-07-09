@@ -288,6 +288,13 @@ export default function StudentRegistration() {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
+          <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg">
+            <img 
+              src="/src/assets/psa-logo.png" 
+              alt="PSA Logo" 
+              className="w-16 h-16 object-contain"
+            />
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Join Parmanand Sports Academy
           </h1>
