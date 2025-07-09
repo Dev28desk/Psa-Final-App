@@ -9,11 +9,12 @@ import {
 } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebasestorage.app`,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBu6-8FLc1eGaaBeetVyvBcEX5AoL1xGqQ",
+  authDomain: "psa-nashik-app.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "psa-nashik-app",
+  storageBucket: "psa-nashik-app.firebasestorage.app",
+  messagingSenderId: "610461935332",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:610461935332:web:ed897ed463933072196ef1",
 };
 
 // Initialize Firebase

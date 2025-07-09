@@ -1367,8 +1367,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-    }
-  });
 
   app.get("/api/reports/:id/executions", async (req, res) => {
     try {

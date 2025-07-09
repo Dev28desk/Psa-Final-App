@@ -32,11 +32,11 @@ const firebaseConfig = {
 };
 ```
 
-### Step 4: Required Environment Variables
-Add these to your environment:
-- `VITE_FIREBASE_API_KEY`
-- `VITE_FIREBASE_PROJECT_ID` 
-- `VITE_FIREBASE_APP_ID`
+### Step 4: Required Environment Variables ✅ COMPLETED
+Environment variables configured:
+- `VITE_FIREBASE_API_KEY="AIzaSyBu6-8FLc1eGaaBeetVyvBcEX5AoL1xGqQ"`
+- `VITE_FIREBASE_PROJECT_ID="psa-nashik-app"`
+- `VITE_FIREBASE_APP_ID="1:610461935332:web:ed897ed463933072196ef1"`
 
 ## Implementation Overview
 
