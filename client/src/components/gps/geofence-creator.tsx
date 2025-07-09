@@ -250,10 +250,10 @@ export const GeofenceCreator: React.FC<GeofenceCreatorProps> = ({ onGeofenceCrea
   const MapDisplay = () => (
     <div className="relative">
       {!isMapLoaded ? (
-        <div className="w-full h-80 bg-gradient-to-br from-blue-100 to-green-100 dark:from-blue-900 dark:to-green-900 rounded-lg border flex items-center justify-center">
+        <div className="w-full h-80 bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-950 dark:to-green-950 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
-            <p className="text-sm text-gray-600 dark:text-gray-400">Loading Google Maps...</p>
+            <div className="animate-spin w-8 h-8 border-4 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full mx-auto mb-4" />
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Loading Google Maps...</p>
           </div>
         </div>
       ) : (
@@ -265,15 +265,15 @@ export const GeofenceCreator: React.FC<GeofenceCreatorProps> = ({ onGeofenceCrea
       {/* Map Controls Overlay */}
       {isMapLoaded && (
         <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
-          <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-lg border text-xs">
-            <div className="font-semibold text-gray-900 dark:text-gray-100">
+          <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 text-xs">
+            <div className="font-semibold text-gray-900 dark:text-white">
               {mapCenter.lat.toFixed(6)}, {mapCenter.lng.toFixed(6)}
             </div>
-            <div className="text-gray-600 dark:text-gray-400">
+            <div className="text-gray-700 dark:text-gray-300">
               Radius: {radius}m • Area: ~{Math.round(Math.PI * radius * radius / 10000)} ha
             </div>
           </div>
-          <div className="bg-blue-500 text-white px-3 py-2 rounded-lg shadow-lg text-xs">
+          <div className="bg-blue-600 dark:bg-blue-500 text-white px-3 py-2 rounded-lg shadow-lg text-xs font-medium">
             Click map to set center
           </div>
         </div>
@@ -284,7 +284,7 @@ export const GeofenceCreator: React.FC<GeofenceCreatorProps> = ({ onGeofenceCrea
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="flex items-center gap-2">
+        <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-medium">
           <Plus className="h-4 w-4" />
           Create Geofence
         </Button>
@@ -300,7 +300,7 @@ export const GeofenceCreator: React.FC<GeofenceCreatorProps> = ({ onGeofenceCrea
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Map Display */}
           <div className="space-y-2">
-            <Label>Location & Boundaries</Label>
+            <Label className="text-gray-900 dark:text-gray-100 font-medium">Location & Boundaries</Label>
             <MapDisplay />
             
             <div className="flex gap-2">
@@ -310,12 +310,13 @@ export const GeofenceCreator: React.FC<GeofenceCreatorProps> = ({ onGeofenceCrea
                 size="sm" 
                 onClick={getCurrentLocation}
                 disabled={isUsingCurrentLocation}
+                className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 <MapPin className="h-4 w-4 mr-2" />
                 {isUsingCurrentLocation ? "Getting Location..." : "Use Current Location"}
               </Button>
               
-              <Badge variant="secondary" className="flex items-center gap-1">
+              <Badge variant="secondary" className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700">
                 <MapPin className="h-3 w-3" />
                 {mapCenter.lat.toFixed(6)}, {mapCenter.lng.toFixed(6)}
               </Badge>
@@ -324,7 +325,7 @@ export const GeofenceCreator: React.FC<GeofenceCreatorProps> = ({ onGeofenceCrea
 
           {/* Radius Control */}
           <div className="space-y-2">
-            <Label>Radius: {radius} meters</Label>
+            <Label className="text-gray-900 dark:text-gray-100 font-medium">Radius: {radius} meters</Label>
             <Slider
               value={[radius]}
               onValueChange={(value) => setRadius(value[0])}
@@ -333,7 +334,7 @@ export const GeofenceCreator: React.FC<GeofenceCreatorProps> = ({ onGeofenceCrea
               step={10}
               className="w-full"
             />
-            <div className="flex justify-between text-xs text-gray-500">
+            <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 font-medium">
               <span>10m</span>
               <span>250m</span>
               <span>500m</span>
@@ -343,46 +344,48 @@ export const GeofenceCreator: React.FC<GeofenceCreatorProps> = ({ onGeofenceCrea
           {/* Geofence Details */}
           <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="geofence-name">Geofence Name *</Label>
+              <Label htmlFor="geofence-name" className="text-gray-900 dark:text-gray-100 font-medium">Geofence Name *</Label>
               <Input
                 id="geofence-name"
                 value={geofenceName}
                 onChange={(e) => setGeofenceName(e.target.value)}
                 placeholder="e.g., Main Academy, Training Ground A"
                 required
+                className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 dark:focus:border-blue-400"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description" className="text-gray-900 dark:text-gray-100 font-medium">Description</Label>
               <Textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Optional description of this geofence area"
                 rows={3}
+                className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 dark:focus:border-blue-400"
               />
             </div>
           </div>
 
           {/* Preview Info */}
-          <Card>
+          <Card className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
             <CardHeader>
-              <CardTitle className="text-sm">Geofence Preview</CardTitle>
+              <CardTitle className="text-sm text-gray-900 dark:text-gray-100">Geofence Preview</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">Center:</span> {mapCenter.lat.toFixed(6)}, {mapCenter.lng.toFixed(6)}
+                <div className="text-gray-900 dark:text-gray-100">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Center:</span> {mapCenter.lat.toFixed(6)}, {mapCenter.lng.toFixed(6)}
                 </div>
-                <div>
-                  <span className="font-medium">Radius:</span> {radius} meters
+                <div className="text-gray-900 dark:text-gray-100">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Radius:</span> {radius} meters
                 </div>
-                <div>
-                  <span className="font-medium">Area:</span> ~{Math.round(Math.PI * radius * radius / 10000)} hectares
+                <div className="text-gray-900 dark:text-gray-100">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Area:</span> ~{Math.round(Math.PI * radius * radius / 10000)} hectares
                 </div>
-                <div>
-                  <span className="font-medium">Name:</span> {geofenceName || 'Not set'}
+                <div className="text-gray-900 dark:text-gray-100">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Name:</span> {geofenceName || 'Not set'}
                 </div>
               </div>
             </CardContent>
@@ -390,11 +393,20 @@ export const GeofenceCreator: React.FC<GeofenceCreatorProps> = ({ onGeofenceCrea
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setIsOpen(false)}
+              className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
               <X className="h-4 w-4 mr-2" />
               Cancel
             </Button>
-            <Button type="submit" disabled={createGeofenceMutation.isPending}>
+            <Button 
+              type="submit" 
+              disabled={createGeofenceMutation.isPending}
+              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-medium"
+            >
               <Save className="h-4 w-4 mr-2" />
               {createGeofenceMutation.isPending ? "Creating..." : "Create Geofence"}
             </Button>
