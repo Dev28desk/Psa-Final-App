@@ -1251,6 +1251,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Student Registration API
+  app.post("/api/students/register", async (req, res) => {
+    try {
+      const {
+        phone,
+        name,
+        email,
+        dateOfBirth,
+        gender,
+        address,
+        emergencyContact,
+        sportId,
+        batchId,
+        registrationFee,
+        enrollmentDate
+      } = req.body;
+
+      // Check if student already exists
+      const existingStudent = await storage.getStudentByPhone(phone);
+      if (existingStudent) {
+        return res.status(400).json({
+          success: false,
+          message: "Student with this phone number already exists"
+        });
+      }
+
+      // Create student record
+      const student = await storage.createStudent({
+        name,
+        email,
+        phone,
+        dateOfBirth,
+        gender,
+        address,
+        emergencyContact,
+        sportId: parseInt(sportId),
+        batchId: parseInt(batchId),
+        status: 'active',
+        enrollmentDate: new Date(enrollmentDate),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+
+      // Record registration payment
+      if (registrationFee > 0) {
+        await storage.createPayment({
+          studentId: student.id,
+          amount: registrationFee,
+          paymentMethod: 'online',
+          paymentType: 'registration',
+          status: 'completed',
+          month: new Date().getMonth() + 1,
+          year: new Date().getFullYear(),
+          paidAt: new Date(),
+          createdAt: new Date()
+        });
+      }
+
+      // Award welcome badge
+      try {
+        const welcomeBadge = await storage.getBadgeByName('Welcome to Academy');
+        if (welcomeBadge) {
+          await storage.createStudentBadge({
+            studentId: student.id,
+            badgeId: welcomeBadge.id,
+            earnedAt: new Date(),
+            progress: {},
+            isDisplayed: true
+          });
+        }
+      } catch (error) {
+        console.log('Welcome badge not found, skipping badge award');
+      }
+
+      res.json({
+        success: true,
+        message: "Registration completed successfully",
+        student: {
+          id: student.id,
+          name: student.name,
+          email: student.email,
+          phone: student.phone
+        }
+      });
+
+    } catch (error: any) {
+      console.error("Student registration error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Registration failed"
+      });
+    }
+  });
+
+  // Check if phone number is already registered
+  app.get("/api/students/check-phone/:phone", async (req, res) => {
+    try {
+      const { phone } = req.params;
+      const student = await storage.getStudentByPhone(phone);
+      
+      res.json({
+        exists: !!student,
+        student: student ? {
+          id: student.id,
+          name: student.name,
+          email: student.email
+        } : null
+      });
+    } catch (error: any) {
+      console.error("Phone check error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to check phone number"
+      });
+    }
+  });
+    }
+  });
+
   app.get("/api/reports/:id/executions", async (req, res) => {
     try {
       const { id } = req.params;

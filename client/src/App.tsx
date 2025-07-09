@@ -20,6 +20,7 @@ import Campaigns from "@/pages/campaigns";
 import UserManagement from "@/pages/user-management";
 import GPSTracking from "@/pages/gps-tracking";
 import StudentBadges from "@/pages/student-badges";
+import StudentRegistration from "@/pages/student-registration";
 import NotFound from "@/pages/not-found";
 import MobileApp from "@/mobile/App";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -64,6 +65,7 @@ function Router() {
               <Route path="/student-badges" component={StudentBadges} />
               <Route path="/mobile" component={MobileApp} />
               <Route path="/mobile/:rest*" component={MobileApp} />
+              <Route path="/student-registration" component={StudentRegistration} />
               <Route component={NotFound} />
             </Switch>
           </div>

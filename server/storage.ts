@@ -36,6 +36,7 @@ export interface IStorage {
   // Student operations
   getStudent(id: number): Promise<Student | undefined>;
   getStudentByStudentId(studentId: string): Promise<Student | undefined>;
+  getStudentByPhone(phone: string): Promise<Student | undefined>;
   getStudents(filters?: {
     sportId?: number;
     batchId?: number;
