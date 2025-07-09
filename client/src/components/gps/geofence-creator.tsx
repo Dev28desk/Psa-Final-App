@@ -4,13 +4,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { MapPin, Plus, Save, X } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from '@/lib/queryClient';
+
+// Google Maps API Key
+const GOOGLE_MAPS_API_KEY = 'AIzaSyBvuLhJNi_L5dAaEO9zJpJ5P3EjxdF_oYw';
+
+declare global {
+  interface Window {
+    google: any;
+    initMap: () => void;
+  }
+}
 
 interface GeofenceCreatorProps {
   onGeofenceCreated?: () => void;
@@ -23,9 +33,118 @@ export const GeofenceCreator: React.FC<GeofenceCreatorProps> = ({ onGeofenceCrea
   const [geofenceName, setGeofenceName] = useState('');
   const [description, setDescription] = useState('');
   const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const circleRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // Load Google Maps API
+  useEffect(() => {
+    if (!window.google) {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=geometry`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        setIsMapLoaded(true);
+      };
+      document.head.appendChild(script);
+    } else {
+      setIsMapLoaded(true);
+    }
+  }, []);
+
+  // Initialize map when dialog opens
+  useEffect(() => {
+    if (isOpen && isMapLoaded && mapRef.current && !mapInstanceRef.current) {
+      initializeMap();
+    }
+  }, [isOpen, isMapLoaded]);
+
+  const initializeMap = () => {
+    if (!mapRef.current || !window.google) return;
+
+    const map = new window.google.maps.Map(mapRef.current, {
+      center: mapCenter,
+      zoom: 16,
+      mapTypeId: 'hybrid',
+      disableDefaultUI: false,
+      zoomControl: true,
+      streetViewControl: false,
+      fullscreenControl: false,
+    });
+
+    mapInstanceRef.current = map;
+
+    // Add click listener to map
+    map.addListener('click', (event: any) => {
+      const lat = event.latLng.lat();
+      const lng = event.latLng.lng();
+      setMapCenter({ lat, lng });
+      updateMapMarkers(map, { lat, lng });
+    });
+
+    // Initialize markers
+    updateMapMarkers(map, mapCenter);
+  };
+
+  const updateMapMarkers = (map: any, center: { lat: number; lng: number }) => {
+    // Remove existing markers
+    if (markerRef.current) {
+      markerRef.current.setMap(null);
+    }
+    if (circleRef.current) {
+      circleRef.current.setMap(null);
+    }
+
+    // Add center marker
+    markerRef.current = new window.google.maps.Marker({
+      position: center,
+      map: map,
+      title: 'Geofence Center',
+      icon: {
+        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+        `),
+        scaledSize: new window.google.maps.Size(24, 24),
+      },
+    });
+
+    // Add radius circle
+    circleRef.current = new window.google.maps.Circle({
+      strokeColor: '#3b82f6',
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
+      fillColor: '#3b82f6',
+      fillOpacity: 0.2,
+      map: map,
+      center: center,
+      radius: radius,
+    });
+
+    // Center map on new location
+    map.setCenter(center);
+  };
+
+  // Update circle radius when radius changes
+  useEffect(() => {
+    if (circleRef.current) {
+      circleRef.current.setRadius(radius);
+    }
+  }, [radius]);
+
+  // Update markers when map center changes
+  useEffect(() => {
+    if (mapInstanceRef.current) {
+      updateMapMarkers(mapInstanceRef.current, mapCenter);
+    }
+  }, [mapCenter]);
 
   const createGeofenceMutation = useMutation({
     mutationFn: async (geofenceData: any) => {
@@ -90,6 +209,21 @@ export const GeofenceCreator: React.FC<GeofenceCreatorProps> = ({ onGeofenceCrea
     }
   };
 
+  // Clean up map instance when dialog closes
+  useEffect(() => {
+    if (!isOpen && mapInstanceRef.current) {
+      mapInstanceRef.current = null;
+      if (markerRef.current) {
+        markerRef.current.setMap(null);
+        markerRef.current = null;
+      }
+      if (circleRef.current) {
+        circleRef.current.setMap(null);
+        circleRef.current = null;
+      }
+    }
+  }, [isOpen]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!geofenceName.trim()) {
@@ -111,79 +245,39 @@ export const GeofenceCreator: React.FC<GeofenceCreatorProps> = ({ onGeofenceCrea
     });
   };
 
-  const handleMapClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    // Convert pixel coordinates to approximate lat/lng (simplified)
-    const mapWidth = rect.width;
-    const mapHeight = rect.height;
-    
-    // Simple approximation - in a real app, you'd use a proper map library
-    const latOffset = (y - mapHeight / 2) / mapHeight * 0.01;
-    const lngOffset = (x - mapWidth / 2) / mapWidth * 0.01;
-    
-    setMapCenter({
-      lat: mapCenter.lat - latOffset,
-      lng: mapCenter.lng + lngOffset
-    });
-  };
+
 
   const MapDisplay = () => (
     <div className="relative">
-      <div 
-        ref={mapRef}
-        className="w-full h-80 bg-gradient-to-br from-green-100 to-blue-100 dark:from-green-900 dark:to-blue-900 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 cursor-crosshair relative overflow-hidden"
-        onClick={handleMapClick}
-      >
-        {/* Map Grid */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="grid grid-cols-8 grid-rows-6 h-full">
-            {Array.from({ length: 48 }).map((_, i) => (
-              <div key={i} className="border border-gray-400 dark:border-gray-500" />
-            ))}
+      {!isMapLoaded ? (
+        <div className="w-full h-80 bg-gradient-to-br from-blue-100 to-green-100 dark:from-blue-900 dark:to-green-900 rounded-lg border flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
+            <p className="text-sm text-gray-600 dark:text-gray-400">Loading Google Maps...</p>
           </div>
         </div>
-
-        {/* Center Marker */}
-        <div 
-          className="absolute transform -translate-x-1/2 -translate-y-1/2 z-10"
-          style={{
-            left: '50%',
-            top: '50%'
-          }}
-        >
-          <MapPin className="h-8 w-8 text-red-500 drop-shadow-lg" />
+      ) : (
+        <div className="w-full h-80 rounded-lg border overflow-hidden">
+          <div ref={mapRef} className="w-full h-full" />
         </div>
-
-        {/* Radius Circle */}
-        <div 
-          className="absolute border-2 border-blue-500 border-opacity-60 bg-blue-200 bg-opacity-20 rounded-full transform -translate-x-1/2 -translate-y-1/2 z-5"
-          style={{
-            left: '50%',
-            top: '50%',
-            width: `${Math.min(radius / 2, 150)}px`,
-            height: `${Math.min(radius / 2, 150)}px`
-          }}
-        />
-
-        {/* Coordinates Display */}
-        <div className="absolute top-2 left-2 bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs font-mono border">
-          <div>Lat: {mapCenter.lat.toFixed(6)}</div>
-          <div>Lng: {mapCenter.lng.toFixed(6)}</div>
+      )}
+      
+      {/* Map Controls Overlay */}
+      {isMapLoaded && (
+        <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
+          <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-lg border text-xs">
+            <div className="font-semibold text-gray-900 dark:text-gray-100">
+              {mapCenter.lat.toFixed(6)}, {mapCenter.lng.toFixed(6)}
+            </div>
+            <div className="text-gray-600 dark:text-gray-400">
+              Radius: {radius}m • Area: ~{Math.round(Math.PI * radius * radius / 10000)} ha
+            </div>
+          </div>
+          <div className="bg-blue-500 text-white px-3 py-2 rounded-lg shadow-lg text-xs">
+            Click map to set center
+          </div>
         </div>
-
-        {/* Radius Display */}
-        <div className="absolute top-2 right-2 bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs border">
-          Radius: {radius}m
-        </div>
-
-        {/* Click Instructions */}
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 px-3 py-1 rounded text-xs border">
-          Click on map to set center point
-        </div>
-      </div>
+      )}
     </div>
   );
 
@@ -198,6 +292,9 @@ export const GeofenceCreator: React.FC<GeofenceCreatorProps> = ({ onGeofenceCrea
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Geofence</DialogTitle>
+          <DialogDescription>
+            Set up a geographical boundary for GPS-verified attendance tracking
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
