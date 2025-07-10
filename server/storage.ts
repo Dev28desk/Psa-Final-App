@@ -563,11 +563,9 @@ export class DatabaseStorage implements IStorage {
       description: payments.description,
       createdAt: payments.createdAt,
       updatedAt: payments.updatedAt,
-      student: {
-        name: students.name,
-        studentId: students.studentId,
-        phone: students.phone
-      }
+      studentName: students.name,
+      studentStudentId: students.studentId,
+      studentPhone: students.phone
     }).from(payments)
     .leftJoin(students, eq(payments.studentId, students.id));
 

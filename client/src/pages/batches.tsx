@@ -111,14 +111,17 @@ export default function BatchesPage() {
       return await apiRequest('PUT', `/api/batches/${id}`, data);
     },
     onSuccess: () => {
+      // Force refresh all batch-related data
       queryClient.invalidateQueries({ queryKey: ['/api/batches'] });
       queryClient.invalidateQueries({ queryKey: ['/api/batches/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
+      queryClient.refetchQueries({ queryKey: ['/api/batches'] });
       setIsDialogOpen(false);
       setEditingBatch(null);
       form.reset();
       toast({
         title: "Success",
-        description: "Batch has been updated successfully.",
+        description: "Batch schedule has been updated successfully.",
       });
     },
     onError: (error: any) => {

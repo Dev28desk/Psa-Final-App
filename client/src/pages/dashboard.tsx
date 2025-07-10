@@ -42,14 +42,21 @@ export default function Dashboard() {
             <p className="text-gray-600 dark:text-gray-400">Welcome back! Here's what's happening at your academy today.</p>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-            <Button variant="outline" size="sm" className="hover:bg-gray-50 dark:hover:bg-gray-700 w-full sm:w-auto">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="hover:bg-gray-50 dark:hover:bg-gray-700 w-full sm:w-auto"
+              onClick={() => window.location.href = '/reports'}
+            >
               <FileText className="h-4 w-4 mr-2" />
               Export Report
             </Button>
-            <Button size="sm" className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
-              <UserPlus className="h-4 w-4 mr-2" />
-              Add Student
-            </Button>
+            <Link href="/student-registration">
+              <Button size="sm" className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add Student
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
@@ -103,13 +110,15 @@ export default function Dashboard() {
               <span className="text-xs font-medium">View Students</span>
             </Button>
           </Link>
-          <Button 
-            variant="outline" 
-            className="h-16 sm:h-20 w-full flex flex-col items-center justify-center space-y-1 sm:space-y-2 hover:bg-indigo-600 hover:text-white transition-all duration-200 hover:shadow-md"
-          >
-            <Grid3X3 className="h-5 w-5 sm:h-6 sm:w-6" />
-            <span className="text-xs font-medium">Manage Batches</span>
-          </Button>
+          <Link href="/batches">
+            <Button 
+              variant="outline" 
+              className="h-16 sm:h-20 w-full flex flex-col items-center justify-center space-y-1 sm:space-y-2 hover:bg-indigo-600 hover:text-white transition-all duration-200 hover:shadow-md"
+            >
+              <Grid3X3 className="h-5 w-5 sm:h-6 sm:w-6" />
+              <span className="text-xs font-medium">Manage Batches</span>
+            </Button>
+          </Link>
         </div>
       </div>
 

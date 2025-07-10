@@ -31,20 +31,27 @@ export default function Reports() {
       }).toString();
       
       const response = await fetch(`/api/reports/generate/${type}?${queryParams}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to generate report: ${response.statusText}`);
+      }
+      
       const data = await response.json();
       
-      if (response.ok) {
-        // Create and download CSV/PDF
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${type}-report-${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-      }
+      // Create and download CSV/PDF
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${type}-report-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
+      // Show success message
+      alert(`${type} report has been generated and downloaded successfully!`);
     } catch (error) {
       console.error('Report generation failed:', error);
+      alert(`Failed to generate ${type} report. Please try again.`);
     }
   };
 

@@ -337,13 +337,21 @@ function calculateRetentionMetrics(students: any[], payments: any[], attendance:
 
 export async function generateAIResponse(query: string) {
   try {
-    // Get relevant data based on query context
-    const [students, payments, attendance, revenueStats] = await Promise.all([
+    // Get relevant data based on query context with better error handling
+    const [studentsData, paymentsData, attendanceData, revenueStats] = await Promise.allSettled([
       storage.getStudents(),
       storage.getPayments(),
-      storage.getAttendanceStats(),
-      storage.getRevenueStats(),
+      storage.getAttendanceStats().catch(() => ({ percentage: 0 })),
+      storage.getRevenueStats().catch(() => ({ total: 0, thisMonth: 0, growth: 0 })),
     ]);
+
+    const students = studentsData.status === 'fulfilled' ? studentsData.value : null;
+    const payments = paymentsData.status === 'fulfilled' ? paymentsData.value : null;
+    const attendance = attendanceData.status === 'fulfilled' ? attendanceData.value : { percentage: 0 };
+    const revenue = revenueStats.status === 'fulfilled' ? revenueStats.value : { total: 0, thisMonth: 0, growth: 0 };
+
+    const studentsCount = Array.isArray(students) ? students.length : students?.students?.length || 0;
+    const paymentsCount = Array.isArray(payments) ? payments.length : payments?.payments?.length || 0;
 
     const prompt = `
     You are an AI assistant for Parmanand Sports Academy. Answer the following question based on the academy data:
@@ -351,10 +359,10 @@ export async function generateAIResponse(query: string) {
     Query: ${query}
 
     Academy Data:
-    - Students: ${Array.isArray(students) ? students.length : students?.students?.length || 0} total students
-    - Revenue Stats: Total: ₹${revenueStats.total}, This Month: ₹${revenueStats.thisMonth}, Growth: ${revenueStats.growth}%
+    - Students: ${studentsCount} total students
+    - Revenue Stats: Total: ₹${revenue.total}, This Month: ₹${revenue.thisMonth}, Growth: ${revenue.growth}%
     - Attendance: ${attendance.percentage}% average attendance
-    - Recent Payments: ${Array.isArray(payments) ? payments.length : payments?.payments?.length || 0} payment records
+    - Recent Payments: ${paymentsCount} payment records
 
     Please provide a helpful, specific answer based on this data. Be conversational and actionable.
     Keep your response concise but informative.
@@ -373,12 +381,24 @@ export async function generateAIResponse(query: string) {
     });
 
     // Clean up the response to remove markdown formatting
-    let cleanedResponse = response.text || "{}";
+    let cleanedResponse = response.text || '{"answer": "I apologize, but I encountered an issue processing your query. Please try again.", "suggestions": ["Check your question and try again", "Contact support if the issue persists"], "confidence": 50}';
     cleanedResponse = cleanedResponse.replace(/```json\s*/, '').replace(/```\s*$/, '');
     
-    return JSON.parse(cleanedResponse);
+    try {
+      return JSON.parse(cleanedResponse);
+    } catch (parseError) {
+      return {
+        answer: "I processed your query but had trouble formatting the response. Based on the academy data, we currently have " + studentsCount + " students with " + attendance.percentage + "% average attendance and ₹" + revenue.total + " total revenue.",
+        suggestions: ["Review student attendance trends", "Check payment collection status"],
+        confidence: 70
+      };
+    }
   } catch (error) {
     console.error("AI Response Error:", error);
-    throw new Error("Failed to generate AI response");
+    return {
+      answer: "I'm currently experiencing technical difficulties. Please check your API configuration and try again.",
+      suggestions: ["Verify Google API key is properly set", "Contact administrator for assistance"],
+      confidence: 0
+    };
   }
 }

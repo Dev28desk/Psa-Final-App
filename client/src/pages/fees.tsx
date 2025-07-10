@@ -289,10 +289,10 @@ export default function Fees() {
                     <tr key={payment.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {payment.student?.name || `Student ${payment.studentId}`}
+                          {payment.studentName || `Student ${payment.studentId}`}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
-                          ID: {payment.student?.studentId || payment.studentId} • Receipt: {payment.receiptNumber}
+                          ID: {payment.studentStudentId || payment.studentId} • Receipt: {payment.receiptNumber}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

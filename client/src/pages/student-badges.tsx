@@ -153,10 +153,12 @@ export default function StudentBadges() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: students, isLoading: studentsLoading } = useQuery({
+  const { data: studentsData, isLoading: studentsLoading } = useQuery({
     queryKey: ['/api/students'],
     staleTime: 5 * 60 * 1000,
   });
+
+  const students = studentsData?.students || [];
 
   const { data: studentBadges, isLoading: studentBadgesLoading } = useQuery({
     queryKey: ['/api/students', selectedStudent, 'badges'],
@@ -443,6 +445,10 @@ export default function StudentBadges() {
                 {studentsLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
+                ) : students?.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    No students found
                   </div>
                 ) : (
                   students?.map((student: Student) => (

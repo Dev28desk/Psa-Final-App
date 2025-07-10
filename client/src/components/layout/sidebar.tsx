@@ -136,7 +136,7 @@ export function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileToggle }:
                     className={`
                       w-full justify-start gap-3 h-10 px-3
                       ${isCollapsed ? 'px-2 justify-center' : ''}
-                      ${active ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}
+                      ${active ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'}
                     `}
                     onClick={() => {
                       if (window.innerWidth < 1024) {
