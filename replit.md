@@ -131,21 +131,28 @@ Preferred communication style: Simple, everyday language.
 
 ### Production Deployment Options
 
-#### Option 1: Traditional VPS Deployment
+#### Option 1: One-Line VPS Installation (Recommended)
+- **Quick Setup**: Single command installation: `curl -fsSL https://raw.githubusercontent.com/your-username/parmanand-sports-academy/main/install.sh | bash`
+- **Automatic Configuration**: Complete system setup including Node.js, PostgreSQL, Nginx, SSL certificates
+- **Security**: Automated firewall setup, SSL certificates, and security headers
+- **Time**: 5-10 minutes for complete production deployment
+- **Cost**: $15-30/month for VPS hosting
+
+#### Option 2: Traditional VPS Deployment
 - **Server Requirements**: Ubuntu 22.04 LTS with 4GB RAM and 2 vCPUs
 - **Database**: PostgreSQL with regular backups
 - **Reverse Proxy**: Nginx for load balancing and SSL termination
 - **Process Management**: PM2 for Node.js application management
 - **Monitoring**: Server monitoring with uptime tracking
 
-#### Option 2: Docker Containerization
+#### Option 3: Docker Containerization
 - **Container Strategy**: Multi-stage Docker builds for optimized images
 - **Orchestration**: Docker Compose for local development and small deployments
 - **Database**: Containerized PostgreSQL with persistent volumes
 - **Networking**: Docker networks for secure inter-service communication
 - **Scaling**: Horizontal scaling capabilities with load balancing
 
-#### Option 3: Cloud-Native Deployment
+#### Option 4: Cloud-Native Deployment
 - **Database**: Neon PostgreSQL serverless for automatic scaling
 - **Frontend**: Static site hosting with CDN distribution
 - **Backend**: Serverless functions or containerized microservices
