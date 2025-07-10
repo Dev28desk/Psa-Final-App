@@ -68,6 +68,7 @@ export interface IStorage {
     studentId?: number;
     status?: string;
     monthYear?: string;
+    search?: string;
     limit?: number;
     offset?: number;
   }): Promise<{ payments: Payment[]; total: number }>;
@@ -539,6 +540,7 @@ export class DatabaseStorage implements IStorage {
     studentId?: number;
     status?: string;
     monthYear?: string;
+    search?: string;
     limit?: number;
     offset?: number;
   }): Promise<{ payments: Payment[]; total: number }> {
@@ -548,15 +550,54 @@ export class DatabaseStorage implements IStorage {
     if (filters?.status) conditions.push(eq(payments.status, filters.status));
     if (filters?.monthYear) conditions.push(eq(payments.monthYear, filters.monthYear));
 
+    // Build base query with student join for enhanced search
+    const baseQuery = db.select({
+      id: payments.id,
+      studentId: payments.studentId,
+      amount: payments.amount,
+      paymentMethod: payments.paymentMethod,
+      status: payments.status,
+      paymentDate: payments.paymentDate,
+      receiptNumber: payments.receiptNumber,
+      monthYear: payments.monthYear,
+      description: payments.description,
+      createdAt: payments.createdAt,
+      updatedAt: payments.updatedAt,
+      student: {
+        name: students.name,
+        studentId: students.studentId,
+        phone: students.phone
+      }
+    }).from(payments)
+    .leftJoin(students, eq(payments.studentId, students.id));
+
+    // Handle search functionality
+    if (filters?.search) {
+      const searchTerm = `%${filters.search.toLowerCase()}%`;
+      conditions.push(
+        or(
+          like(sql`LOWER(${payments.receiptNumber})`, searchTerm),
+          like(sql`LOWER(${payments.paymentMethod})`, searchTerm),
+          like(sql`LOWER(${payments.description})`, searchTerm),
+          like(sql`LOWER(CAST(${payments.amount} AS TEXT))`, searchTerm),
+          like(sql`LOWER(${students.name})`, searchTerm),
+          like(sql`LOWER(${students.studentId})`, searchTerm),
+          like(sql`LOWER(${students.phone})`, searchTerm)
+        )
+      );
+    }
+
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
     
     const [paymentsResult, totalResult] = await Promise.all([
-      db.select().from(payments)
+      baseQuery
         .where(whereClause)
         .limit(filters?.limit || 50)
         .offset(filters?.offset || 0)
         .orderBy(desc(payments.createdAt)),
-      db.select({ count: count() }).from(payments).where(whereClause)
+      db.select({ count: count() }).from(payments)
+        .leftJoin(students, eq(payments.studentId, students.id))
+        .where(whereClause)
     ]);
 
     return {

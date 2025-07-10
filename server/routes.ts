@@ -199,6 +199,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         studentId: req.query.studentId ? parseInt(req.query.studentId as string) : undefined,
         status: req.query.status as string,
         monthYear: req.query.monthYear as string,
+        search: req.query.search as string,
         limit: parseInt(req.query.limit as string) || 50,
         offset: parseInt(req.query.offset as string) || 0
       };

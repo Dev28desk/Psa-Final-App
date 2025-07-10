@@ -62,7 +62,13 @@ export default function Fees() {
   };
 
   const { data: paymentsData, isLoading } = useQuery({
-    queryKey: ['/api/payments', { search: searchTerm, status: statusFilter !== 'all' ? statusFilter : undefined }],
+    queryKey: ['/api/payments', searchTerm, statusFilter],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (searchTerm) params.append('search', searchTerm);
+      if (statusFilter !== 'all') params.append('status', statusFilter);
+      return apiRequest('GET', `/api/payments?${params.toString()}`);
+    },
   });
 
   const { data: revenueStats } = useQuery({
@@ -282,11 +288,11 @@ export default function Fees() {
                   {paymentsData?.payments?.map((payment: any) => (
                     <tr key={payment.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          Student {payment.studentId}
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {payment.student?.name || `Student ${payment.studentId}`}
                         </div>
-                        <div className="text-sm text-gray-500">
-                          Receipt: {payment.receiptNumber}
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          ID: {payment.student?.studentId || payment.studentId} • Receipt: {payment.receiptNumber}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
