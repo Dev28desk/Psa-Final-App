@@ -270,7 +270,10 @@ export default function BatchesPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="sport">Sport</Label>
-                  <Select onValueChange={(value) => form.setValue('sportId', parseInt(value))}>
+                  <Select 
+                    value={form.watch('sportId')?.toString() || ''} 
+                    onValueChange={(value) => form.setValue('sportId', parseInt(value))}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select sport" />
                     </SelectTrigger>
@@ -285,7 +288,10 @@ export default function BatchesPage() {
                 </div>
                 <div>
                   <Label htmlFor="coach">Coach</Label>
-                  <Select onValueChange={(value) => form.setValue('coachId', parseInt(value))}>
+                  <Select 
+                    value={form.watch('coachId')?.toString() || ''} 
+                    onValueChange={(value) => form.setValue('coachId', parseInt(value))}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select coach" />
                     </SelectTrigger>
@@ -302,7 +308,10 @@ export default function BatchesPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="skillLevel">Skill Level</Label>
-                  <Select onValueChange={(value) => form.setValue('skillLevel', value)}>
+                  <Select 
+                    value={form.watch('skillLevel')} 
+                    onValueChange={(value) => form.setValue('skillLevel', value)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select skill level" />
                     </SelectTrigger>
@@ -340,6 +349,7 @@ export default function BatchesPage() {
                       <input
                         type="checkbox"
                         id={day.value}
+                        checked={form.watch('schedule.days')?.includes(day.value) || false}
                         onChange={(e) => {
                           const currentDays = form.watch('schedule.days') || [];
                           if (e.target.checked) {

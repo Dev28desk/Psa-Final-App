@@ -470,7 +470,24 @@ export class DatabaseStorage implements IStorage {
 
   async getSports(isActive?: boolean): Promise<Sport[]> {
     const whereClause = isActive !== undefined ? eq(sports.isActive, isActive) : undefined;
-    return db.select().from(sports).where(whereClause).orderBy(asc(sports.name));
+    
+    // Get sports with student count
+    const sportsWithCount = await db.select({
+      id: sports.id,
+      name: sports.name,
+      description: sports.description,
+      feeStructure: sports.feeStructure,
+      isActive: sports.isActive,
+      createdAt: sports.createdAt,
+      updatedAt: sports.updatedAt,
+      studentsCount: count(students.id)
+    }).from(sports)
+      .leftJoin(students, and(eq(sports.id, students.sportId), eq(students.isActive, true)))
+      .where(whereClause)
+      .groupBy(sports.id, sports.name, sports.description, sports.feeStructure, sports.isActive, sports.createdAt, sports.updatedAt)
+      .orderBy(asc(sports.name));
+    
+    return sportsWithCount;
   }
 
   async createSport(sportData: InsertSport): Promise<Sport> {
@@ -563,9 +580,11 @@ export class DatabaseStorage implements IStorage {
       description: payments.description,
       createdAt: payments.createdAt,
       updatedAt: payments.updatedAt,
-      studentName: students.name,
-      studentStudentId: students.studentId,
-      studentPhone: students.phone
+      student: {
+        name: students.name,
+        studentId: students.studentId,
+        phone: students.phone
+      }
     }).from(payments)
     .leftJoin(students, eq(payments.studentId, students.id));
 

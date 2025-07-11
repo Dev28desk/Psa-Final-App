@@ -45,7 +45,7 @@ export default function Dashboard() {
             <Button 
               variant="outline" 
               size="sm" 
-              className="hover:bg-gray-50 dark:hover:bg-gray-700 w-full sm:w-auto"
+              className="hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 w-full sm:w-auto"
               onClick={() => window.location.href = '/reports'}
             >
               <FileText className="h-4 w-4 mr-2" />

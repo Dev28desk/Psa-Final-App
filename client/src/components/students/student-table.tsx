@@ -60,6 +60,26 @@ export function StudentTable({ students, isLoading, sports, batches }: StudentTa
     setIsCardDialogOpen(true);
   };
 
+  const handleEditStudent = (student: Student) => {
+    // TODO: Implement edit functionality
+    console.log('Edit student:', student);
+  };
+
+  const handleViewStudent = (student: Student) => {
+    // TODO: Implement view functionality
+    console.log('View student:', student);
+  };
+
+  const handleCommentStudent = (student: Student) => {
+    // TODO: Implement comment functionality
+    console.log('Comment on student:', student);
+  };
+
+  const handleDeleteStudent = (student: Student) => {
+    // TODO: Implement delete functionality
+    console.log('Delete student:', student);
+  };
+
   if (isLoading) {
     return (
       <div className="data-table">
@@ -165,16 +185,37 @@ export function StudentTable({ students, isLoading, sports, batches }: StudentTa
                       >
                         <CreditCard className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleViewStudent(student)}
+                        title="View Student"
+                      >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleEditStudent(student)}
+                        title="Edit Student"
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleCommentStudent(student)}
+                        title="Add Comment"
+                      >
                         <MessageCircle className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleDeleteStudent(student)}
+                        title="Delete Student"
+                        className="hover:bg-red-100 hover:text-red-600"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
