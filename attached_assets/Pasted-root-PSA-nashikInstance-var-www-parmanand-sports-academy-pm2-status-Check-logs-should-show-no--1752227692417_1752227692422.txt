@@ -1,0 +1,64 @@
+root@PSA-nashikInstance:/var/www/parmanand-sports-academy# pm2 status
+# Check logs (should show no errors)
+pm2 logs
+# Test API locally
+curl http://localhost:3000/api/dashboard/stats
+# Test in browser
+# Open: http://154.201.126.10
+┌────┬─────────────────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name                        │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼─────────────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ parmanand-sports-academy    │ default     │ 1.0.0   │ cluster │ 35019    │ 15s    │ 0    │ online    │ 0%       │ 51.2mb   │ root     │ disabled │
+│ 1  │ parmanand-sports-academy    │ default     │ 1.0.0   │ cluster │ 35026    │ 15s    │ 0    │ online    │ 0%       │ 50.7mb   │ root     │ disabled │
+└────┴─────────────────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[TAILING] Tailing last 15 lines for [all] processes (change the value with --lines option)
+/root/.pm2/pm2.log last 15 lines:
+PM2        | 2025-07-11T09:53:42: PM2 log: Process dump file    : /root/.pm2/dump.pm2
+PM2        | 2025-07-11T09:53:42: PM2 log: Concurrent actions   : 2
+PM2        | 2025-07-11T09:53:42: PM2 log: SIGTERM timeout      : 1600
+PM2        | 2025-07-11T09:53:42: PM2 log: Runtime Binary       : /usr/bin/node
+PM2        | 2025-07-11T09:53:42: PM2 log: ===============================================================================
+PM2        | 2025-07-11T09:53:42: PM2 log: App [parmanand-sports-academy:0] starting in -cluster mode-
+PM2        | 2025-07-11T09:53:42: PM2 log: App [parmanand-sports-academy:0] online
+PM2        | 2025-07-11T09:53:42: PM2 log: App [parmanand-sports-academy:1] starting in -cluster mode-
+PM2        | 2025-07-11T09:53:42: PM2 log: App [parmanand-sports-academy:1] online
+PM2        | Failed to load Typescript interpreter: Cannot find module 'ts-node/register'
+PM2        | Require stack:
+PM2        | - /usr/lib/node_modules/pm2/lib/ProcessContainer.js
+PM2        | Failed to load Typescript interpreter: Cannot find module 'ts-node/register'
+PM2        | Require stack:
+PM2        | - /usr/lib/node_modules/pm2/lib/ProcessContainer.js
+
+/var/www/parmanand-sports-academy/logs/out-0.log last 15 lines:
+/var/www/parmanand-sports-academy/logs/out-1.log last 15 lines:
+/var/www/parmanand-sports-academy/logs/err-0.log last 15 lines:
+0|parmanan | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|parmanan | TypeError [ERR_UNKNOWN_FILE_EXTENSION]: Unknown file extension ".ts" for /var/www/parmanand-sports-academy/server/index.ts
+0|parmanan |     at Object.getFileProtocolModuleFormat [as file:] (node:internal/modules/esm/get_format:189:9)
+0|parmanan |     at defaultGetFormat (node:internal/modules/esm/get_format:232:36)
+0|parmanan |     at defaultLoad (node:internal/modules/esm/load:145:22)
+0|parmanan |     at async ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:477:45)
+0|parmanan |     at async ModuleJob._link (node:internal/modules/esm/module_job:110:19)
+0|parmanan | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|parmanan | TypeError [ERR_UNKNOWN_FILE_EXTENSION]: Unknown file extension ".ts" for /var/www/parmanand-sports-academy/server/index.ts
+0|parmanan |     at Object.getFileProtocolModuleFormat [as file:] (node:internal/modules/esm/get_format:189:9)
+0|parmanan |     at defaultGetFormat (node:internal/modules/esm/get_format:232:36)
+0|parmanan |     at defaultLoad (node:internal/modules/esm/load:145:22)
+0|parmanan |     at async ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:477:45)
+0|parmanan |     at async ModuleJob._link (node:internal/modules/esm/module_job:110:19)
+
+/var/www/parmanand-sports-academy/logs/err-1.log last 15 lines:
+1|parmanan | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+1|parmanan | TypeError [ERR_UNKNOWN_FILE_EXTENSION]: Unknown file extension ".ts" for /var/www/parmanand-sports-academy/server/index.ts
+1|parmanan |     at Object.getFileProtocolModuleFormat [as file:] (node:internal/modules/esm/get_format:189:9)
+1|parmanan |     at defaultGetFormat (node:internal/modules/esm/get_format:232:36)
+1|parmanan |     at defaultLoad (node:internal/modules/esm/load:145:22)
+1|parmanan |     at async ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:477:45)
+1|parmanan |     at async ModuleJob._link (node:internal/modules/esm/module_job:110:19)
+1|parmanan | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+1|parmanan | TypeError [ERR_UNKNOWN_FILE_EXTENSION]: Unknown file extension ".ts" for /var/www/parmanand-sports-academy/server/index.ts
+1|parmanan |     at Object.getFileProtocolModuleFormat [as file:] (node:internal/modules/esm/get_format:189:9)
+1|parmanan |     at defaultGetFormat (node:internal/modules/esm/get_format:232:36)
+1|parmanan |     at defaultLoad (node:internal/modules/esm/load:145:22)
+1|parmanan |     at async ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:477:45)
+1|parmanan |     at async ModuleJob._link (node:internal/modules/esm/module_job:110:19)
