@@ -121,7 +121,8 @@ export function StudentTable({ students, isLoading, sports, batches }: StudentTa
         // Refresh the page to show updated data
         window.location.reload();
       } else {
-        throw new Error('Failed to update student');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update student');
       }
     } catch (error) {
       toast({
@@ -169,12 +170,13 @@ export function StudentTable({ students, isLoading, sports, batches }: StudentTa
         // Refresh the page to show updated data
         window.location.reload();
       } else {
-        throw new Error('Failed to delete student');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete student');
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to delete student",
+        description: error instanceof Error ? error.message : "Failed to delete student",
         variant: "destructive",
       });
     }

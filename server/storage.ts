@@ -61,6 +61,7 @@ export interface IStorage {
   createBatch(batch: InsertBatch): Promise<Batch>;
   updateBatch(id: number, updates: Partial<InsertBatch>): Promise<Batch | undefined>;
   updateBatchCapacity(id: number, increment: number): Promise<Batch | undefined>;
+  deleteBatch(id: number): Promise<boolean>;
 
   // Payment operations
   getPayment(id: number): Promise<Payment | undefined>;
@@ -559,6 +560,16 @@ export class DatabaseStorage implements IStorage {
       .where(eq(batches.id, id))
       .returning();
     return batch;
+  }
+
+  async deleteBatch(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(batches).where(eq(batches.id, id));
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      console.error('Error deleting batch:', error);
+      return false;
+    }
   }
 
   // Payment operations

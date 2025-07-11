@@ -30,6 +30,33 @@ export default function Students() {
     },
   });
 
+  const handleExport = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (filters.search) params.append('search', filters.search);
+      if (filters.sportId) params.append('sportId', filters.sportId.toString());
+      if (filters.batchId) params.append('batchId', filters.batchId.toString());
+      if (filters.isActive !== undefined) params.append('isActive', filters.isActive.toString());
+      
+      const response = await fetch(`/api/export/students?${params}`);
+      if (!response.ok) {
+        throw new Error('Failed to export students');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `students_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error exporting students:', error);
+    }
+  };
+
   const { data: sports, error: sportsError } = useQuery({
     queryKey: ['/api/sports'],
     queryFn: async () => {
@@ -134,7 +161,11 @@ export default function Students() {
                 <Filter className="h-4 w-4 mr-2" />
                 More Filters
               </Button>
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => handleExport()}
+              >
                 <Download className="h-4 w-4 mr-2" />
                 Export
               </Button>

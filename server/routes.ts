@@ -550,6 +550,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/batches", async (req, res) => {
+    try {
+      const batchData = insertBatchSchema.parse(req.body);
+      const batch = await storage.createBatch(batchData);
+      
+      // Create activity
+      await storage.createActivity({
+        type: 'batch_created',
+        description: `New batch created: ${batch.name}`,
+        userId: 1, // TODO: Get from authenticated user
+        entityId: batch.id,
+        entityType: 'batch'
+      });
+
+      res.status(201).json(batch);
+    } catch (error) {
+      console.error("Error creating batch:", error);
+      res.status(400).json({ message: "Failed to create batch" });
+    }
+  });
+
+  app.patch("/api/batches/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const batch = await storage.updateBatch(id, updates);
+      
+      if (!batch) {
+        return res.status(404).json({ message: "Batch not found" });
+      }
+      
+      res.json(batch);
+    } catch (error) {
+      console.error("Error updating batch:", error);
+      res.status(500).json({ message: "Failed to update batch" });
+    }
+  });
+
+  app.delete("/api/batches/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // Get batch info before deletion for activity logging
+      const batch = await storage.getBatch(id);
+      
+      const success = await storage.deleteBatch(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Batch not found" });
+      }
+      
+      // Create activity for the deletion
+      if (batch) {
+        await storage.createActivity({
+          type: 'batch_deleted',
+          description: `Batch deleted: ${batch.name}`,
+          userId: 1, // TODO: Get from authenticated user
+          entityId: batch.id,
+          entityType: 'batch'
+        });
+
+        // Broadcast update
+        broadcast({
+          type: 'batch_deleted',
+          batchId: id
+        });
+      }
+      
+      res.json({ message: "Batch deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting batch:", error);
+      res.status(500).json({ message: "Failed to delete batch" });
+    }
+  });
+
   // Activities endpoints
   app.get("/api/activities", async (req, res) => {
     try {
@@ -592,6 +668,142 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching attendance report:", error);
       res.status(500).json({ message: "Failed to fetch attendance report" });
+    }
+  });
+
+  // Export endpoints
+  app.get("/api/export/students", async (req, res) => {
+    try {
+      const filters = {
+        sportId: req.query.sportId ? parseInt(req.query.sportId as string) : undefined,
+        batchId: req.query.batchId ? parseInt(req.query.batchId as string) : undefined,
+        search: req.query.search as string,
+        isActive: req.query.isActive ? req.query.isActive === 'true' : undefined
+      };
+
+      const { students } = await storage.getStudents(filters);
+      const filename = `students_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+      
+      const filePath = await reportGenerator.exportToExcel(students, filename);
+      res.download(filePath, filename, (err) => {
+        if (err) {
+          console.error('Error downloading file:', err);
+          res.status(500).json({ message: 'Error downloading file' });
+        }
+      });
+    } catch (error) {
+      console.error("Error exporting students:", error);
+      res.status(500).json({ message: "Failed to export students" });
+    }
+  });
+
+  app.get("/api/export/payments", async (req, res) => {
+    try {
+      const filters = {
+        status: req.query.status as string,
+        monthYear: req.query.monthYear as string,
+        search: req.query.search as string
+      };
+
+      const { payments } = await storage.getPayments(filters);
+      const filename = `payments_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+      
+      const filePath = await reportGenerator.exportToExcel(payments, filename);
+      res.download(filePath, filename, (err) => {
+        if (err) {
+          console.error('Error downloading file:', err);
+          res.status(500).json({ message: 'Error downloading file' });
+        }
+      });
+    } catch (error) {
+      console.error("Error exporting payments:", error);
+      res.status(500).json({ message: "Failed to export payments" });
+    }
+  });
+
+  app.get("/api/export/attendance", async (req, res) => {
+    try {
+      const startDate = new Date(req.query.startDate as string);
+      const endDate = new Date(req.query.endDate as string);
+      const batchId = req.query.batchId ? parseInt(req.query.batchId as string) : undefined;
+      
+      const report = await storage.getAttendanceReport(startDate, endDate, batchId);
+      const filename = `attendance_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+      
+      const filePath = await reportGenerator.exportToExcel(report.students, filename);
+      res.download(filePath, filename, (err) => {
+        if (err) {
+          console.error('Error downloading file:', err);
+          res.status(500).json({ message: 'Error downloading file' });
+        }
+      });
+    } catch (error) {
+      console.error("Error exporting attendance:", error);
+      res.status(500).json({ message: "Failed to export attendance" });
+    }
+  });
+
+  // Report Generation endpoints
+  app.get("/api/reports/generate/:id", async (req, res) => {
+    try {
+      const reportId = parseInt(req.params.id);
+      const executedBy = 1; // TODO: Get from authenticated user
+      
+      const reportExecution = await reportGenerator.generateReport(reportId, executedBy);
+      res.json(reportExecution);
+    } catch (error) {
+      console.error("Error generating report:", error);
+      res.status(500).json({ message: "Failed to generate report" });
+    }
+  });
+
+  app.get("/api/reports/custom", async (req, res) => {
+    try {
+      const filters = {
+        category: req.query.category as string,
+        createdBy: req.query.createdBy ? parseInt(req.query.createdBy as string) : undefined
+      };
+      
+      const reports = await storage.getCustomReports(filters);
+      res.json(reports);
+    } catch (error) {
+      console.error("Error fetching custom reports:", error);
+      res.status(500).json({ message: "Failed to fetch custom reports" });
+    }
+  });
+
+  app.post("/api/reports/custom", async (req, res) => {
+    try {
+      const reportData = req.body;
+      const report = await storage.createCustomReport({
+        ...reportData,
+        createdBy: 1 // TODO: Get from authenticated user
+      });
+      res.json(report);
+    } catch (error) {
+      console.error("Error creating custom report:", error);
+      res.status(500).json({ message: "Failed to create custom report" });
+    }
+  });
+
+  app.get("/api/reports/predefined", async (req, res) => {
+    try {
+      const predefinedReports = reportGenerator.getPredefinedReports();
+      res.json(predefinedReports);
+    } catch (error) {
+      console.error("Error fetching predefined reports:", error);
+      res.status(500).json({ message: "Failed to fetch predefined reports" });
+    }
+  });
+
+  app.post("/api/reports/execute", async (req, res) => {
+    try {
+      const { config } = req.body;
+      const result = await reportGenerator.executeQuery(config);
+      res.json(result);
+    } catch (error) {
+      console.error("Error executing report query:", error);
+      res.status(500).json({ message: "Failed to execute report query" });
     }
   });
 
@@ -753,6 +965,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error creating payment gateway:', error);
       res.status(500).json({ error: 'Failed to create payment gateway' });
+    }
+  });
+
+  app.put('/api/payment-gateways/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const gateway = await storage.updatePaymentGateway(id, req.body);
+      if (!gateway) {
+        return res.status(404).json({ error: 'Payment gateway not found' });
+      }
+      res.json(gateway);
+    } catch (error) {
+      console.error('Error updating payment gateway:', error);
+      res.status(500).json({ error: 'Failed to update payment gateway' });
+    }
+  });
+
+  app.delete('/api/payment-gateways/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deletePaymentGateway(id);
+      if (success) {
+        res.json({ success: true });
+      } else {
+        res.status(404).json({ error: 'Payment gateway not found' });
+      }
+    } catch (error) {
+      console.error('Error deleting payment gateway:', error);
+      res.status(500).json({ error: 'Failed to delete payment gateway' });
     }
   });
 
