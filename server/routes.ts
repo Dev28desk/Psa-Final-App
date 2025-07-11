@@ -176,13 +176,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/students/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const student = await storage.updateStudent(id, updates);
+      
+      if (!student) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+      
+      // Create activity for the update
+      await storage.createActivity({
+        type: 'student_updated',
+        description: `Student updated: ${student.name}`,
+        userId: 1, // TODO: Get from authenticated user
+        entityId: student.id,
+        entityType: 'student'
+      });
+
+      // Broadcast update
+      broadcast({
+        type: 'student_updated',
+        student
+      });
+      
+      res.json(student);
+    } catch (error) {
+      console.error("Error updating student:", error);
+      res.status(500).json({ message: "Failed to update student" });
+    }
+  });
+
   app.delete("/api/students/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      
+      // Get student info before deletion for activity logging
+      const student = await storage.getStudent(id);
+      
       const success = await storage.deleteStudent(id);
       
       if (!success) {
         return res.status(404).json({ message: "Student not found" });
+      }
+      
+      // Create activity for the deletion
+      if (student) {
+        await storage.createActivity({
+          type: 'student_deleted',
+          description: `Student deleted: ${student.name} (ID: ${student.studentId})`,
+          userId: 1, // TODO: Get from authenticated user
+          entityId: student.id,
+          entityType: 'student'
+        });
+
+        // Broadcast update
+        broadcast({
+          type: 'student_deleted',
+          studentId: id
+        });
       }
       
       res.json({ message: "Student deleted successfully" });

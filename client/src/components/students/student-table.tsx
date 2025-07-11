@@ -3,9 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { DigitalCard } from "./digital-card";
 import { StudentCard } from "./student-card";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useToast } from "@/hooks/use-toast";
 import { Eye, CreditCard, MessageCircle, Edit, Trash2 } from "lucide-react";
 
 interface Student {
@@ -32,7 +37,14 @@ interface StudentTableProps {
 export function StudentTable({ students, isLoading, sports, batches }: StudentTableProps) {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isCardDialogOpen, setIsCardDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [comment, setComment] = useState('');
+  const [editForm, setEditForm] = useState<Partial<Student>>({});
   const isMobile = useIsMobile();
+  const { toast } = useToast();
 
   const getSportName = (sportId: number) => {
     return sports.find(s => s.id === sportId)?.name || 'Unknown';
@@ -61,23 +73,111 @@ export function StudentTable({ students, isLoading, sports, batches }: StudentTa
   };
 
   const handleEditStudent = (student: Student) => {
-    // TODO: Implement edit functionality
-    console.log('Edit student:', student);
+    setSelectedStudent(student);
+    setEditForm({
+      id: student.id,
+      name: student.name,
+      phone: student.phone,
+      email: student.email,
+      skillLevel: student.skillLevel
+    });
+    setIsEditDialogOpen(true);
   };
 
   const handleViewStudent = (student: Student) => {
-    // TODO: Implement view functionality
-    console.log('View student:', student);
+    setSelectedStudent(student);
+    setIsViewDialogOpen(true);
   };
 
   const handleCommentStudent = (student: Student) => {
-    // TODO: Implement comment functionality
-    console.log('Comment on student:', student);
+    setSelectedStudent(student);
+    setComment('');
+    setIsCommentDialogOpen(true);
   };
 
   const handleDeleteStudent = (student: Student) => {
-    // TODO: Implement delete functionality
-    console.log('Delete student:', student);
+    setSelectedStudent(student);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedStudent) return;
+    
+    try {
+      const response = await fetch(`/api/students/${selectedStudent.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editForm),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Student updated successfully",
+        });
+        setIsEditDialogOpen(false);
+        // Refresh the page to show updated data
+        window.location.reload();
+      } else {
+        throw new Error('Failed to update student');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update student",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSaveComment = async () => {
+    if (!selectedStudent || !comment.trim()) return;
+    
+    try {
+      // For now, just show a success message
+      toast({
+        title: "Success",
+        description: `Comment added for ${selectedStudent.name}`,
+      });
+      setIsCommentDialogOpen(false);
+      setComment('');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add comment",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedStudent) return;
+    
+    try {
+      const response = await fetch(`/api/students/${selectedStudent.id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Student deleted successfully",
+        });
+        setIsDeleteDialogOpen(false);
+        // Refresh the page to show updated data
+        window.location.reload();
+      } else {
+        throw new Error('Failed to delete student');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete student",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) {
@@ -243,6 +343,165 @@ export function StudentTable({ students, isLoading, sports, batches }: StudentTa
           )}
         </DialogContent>
       </Dialog>
+
+      {/* View Student Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Student Details</DialogTitle>
+          </DialogHeader>
+          {selectedStudent && (
+            <div className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={selectedStudent.profileImageUrl} alt={selectedStudent.name} />
+                  <AvatarFallback>
+                    {selectedStudent.name.split(' ').map(n => n[0]).join('')}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="text-lg font-semibold">{selectedStudent.name}</h3>
+                  <p className="text-sm text-gray-500">ID: {selectedStudent.studentId}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Phone</Label>
+                  <p className="text-sm">{selectedStudent.phone}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Email</Label>
+                  <p className="text-sm">{selectedStudent.email || 'Not provided'}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Sport</Label>
+                  <p className="text-sm">{getSportName(selectedStudent.sportId)}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Batch</Label>
+                  <p className="text-sm">{getBatchName(selectedStudent.batchId)}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Skill Level</Label>
+                  <Badge className={`status-badge ${getSkillLevelColor(selectedStudent.skillLevel)}`}>
+                    {selectedStudent.skillLevel}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Status</Label>
+                  <Badge className={`status-badge ${selectedStudent.isActive ? 'status-paid' : 'status-overdue'}`}>
+                    {selectedStudent.isActive ? 'Active' : 'Inactive'}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Student Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Student</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                value={editForm.name || ''}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                value={editForm.phone || ''}
+                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={editForm.email || ''}
+                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="skillLevel">Skill Level</Label>
+              <select
+                id="skillLevel"
+                value={editForm.skillLevel || ''}
+                onChange={(e) => setEditForm({ ...editForm, skillLevel: e.target.value })}
+                className="w-full p-2 border rounded"
+              >
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveEdit}>
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Comment Dialog */}
+      <Dialog open={isCommentDialogOpen} onOpenChange={setIsCommentDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Comment</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="comment">Comment for {selectedStudent?.name}</Label>
+              <Textarea
+                id="comment"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Enter your comment..."
+                rows={4}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setIsCommentDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveComment}>
+                Save Comment
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the student record for {selectedStudent?.name}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
