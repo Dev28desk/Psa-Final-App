@@ -389,8 +389,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteCoach(id: number): Promise<boolean> {
-    const result = await db.delete(coaches).where(eq(coaches.id, id));
-    return result.rowCount > 0;
+    try {
+      // Check if coach has batches assigned
+      const batchesWithCoach = await db
+        .select()
+        .from(batches)
+        .where(eq(batches.coachId, id));
+      
+      if (batchesWithCoach.length > 0) {
+        throw new Error(`Cannot delete coach: ${batchesWithCoach.length} batches are still assigned to this coach`);
+      }
+      
+      const result = await db.delete(coaches).where(eq(coaches.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error('Error deleting coach:', error);
+      throw error;
+    }
   }
 
   // Student operations
@@ -459,8 +474,25 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteStudent(id: number): Promise<boolean> {
-    const result = await db.delete(students).where(eq(students.id, id));
-    return (result.rowCount ?? 0) > 0;
+    try {
+      // First delete related records in a transaction
+      await db.transaction(async (tx) => {
+        // Delete related records first
+        await tx.delete(payments).where(eq(payments.studentId, id));
+        await tx.delete(attendance).where(eq(attendance.studentId, id));
+        await tx.delete(studentBadges).where(eq(studentBadges.studentId, id));
+        await tx.delete(studentPoints).where(eq(studentPoints.studentId, id));
+        await tx.delete(achievementHistory).where(eq(achievementHistory.studentId, id));
+        
+        // Then delete the student
+        await tx.delete(students).where(eq(students.id, id));
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting student:', error);
+      throw error;
+    }
   }
 
   // Sport operations
@@ -564,11 +596,21 @@ export class DatabaseStorage implements IStorage {
 
   async deleteBatch(id: number): Promise<boolean> {
     try {
+      // Check if batch has students assigned
+      const studentsInBatch = await db
+        .select()
+        .from(students)
+        .where(eq(students.batchId, id));
+      
+      if (studentsInBatch.length > 0) {
+        throw new Error(`Cannot delete batch: ${studentsInBatch.length} students are still assigned to this batch`);
+      }
+      
       const result = await db.delete(batches).where(eq(batches.id, id));
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
       console.error('Error deleting batch:', error);
-      return false;
+      throw error;
     }
   }
 

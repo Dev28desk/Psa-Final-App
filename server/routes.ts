@@ -216,33 +216,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get student info before deletion for activity logging
       const student = await storage.getStudent(id);
       
-      const success = await storage.deleteStudent(id);
-      
-      if (!success) {
+      if (!student) {
         return res.status(404).json({ message: "Student not found" });
       }
       
+      const success = await storage.deleteStudent(id);
+      
       // Create activity for the deletion
-      if (student) {
-        await storage.createActivity({
-          type: 'student_deleted',
-          description: `Student deleted: ${student.name} (ID: ${student.studentId})`,
-          userId: 1, // TODO: Get from authenticated user
-          entityId: student.id,
-          entityType: 'student'
-        });
+      await storage.createActivity({
+        type: 'student_deleted',
+        description: `Student deleted: ${student.name} (ID: ${student.studentId})`,
+        userId: 1, // TODO: Get from authenticated user
+        entityId: student.id,
+        entityType: 'student'
+      });
 
-        // Broadcast update
-        broadcast({
-          type: 'student_deleted',
-          studentId: id
-        });
-      }
+      // Broadcast update
+      broadcast({
+        type: 'student_deleted',
+        studentId: id
+      });
       
       res.json({ message: "Student deleted successfully" });
     } catch (error) {
       console.error("Error deleting student:", error);
-      res.status(500).json({ message: "Failed to delete student" });
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete student";
+      res.status(400).json({ message: errorMessage });
     }
   });
 
@@ -596,33 +595,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get batch info before deletion for activity logging
       const batch = await storage.getBatch(id);
       
-      const success = await storage.deleteBatch(id);
-      
-      if (!success) {
+      if (!batch) {
         return res.status(404).json({ message: "Batch not found" });
       }
       
+      const success = await storage.deleteBatch(id);
+      
       // Create activity for the deletion
-      if (batch) {
-        await storage.createActivity({
-          type: 'batch_deleted',
-          description: `Batch deleted: ${batch.name}`,
-          userId: 1, // TODO: Get from authenticated user
-          entityId: batch.id,
-          entityType: 'batch'
-        });
+      await storage.createActivity({
+        type: 'batch_deleted',
+        description: `Batch deleted: ${batch.name}`,
+        userId: 1, // TODO: Get from authenticated user
+        entityId: batch.id,
+        entityType: 'batch'
+      });
 
-        // Broadcast update
-        broadcast({
-          type: 'batch_deleted',
-          batchId: id
-        });
-      }
+      // Broadcast update
+      broadcast({
+        type: 'batch_deleted',
+        batchId: id
+      });
       
       res.json({ message: "Batch deleted successfully" });
     } catch (error) {
       console.error("Error deleting batch:", error);
-      res.status(500).json({ message: "Failed to delete batch" });
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete batch";
+      res.status(400).json({ message: errorMessage });
     }
   });
 
@@ -1080,7 +1078,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error('Error deleting coach:', error);
-      res.status(500).json({ error: 'Failed to delete coach' });
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete coach";
+      res.status(400).json({ error: errorMessage });
     }
   });
 
