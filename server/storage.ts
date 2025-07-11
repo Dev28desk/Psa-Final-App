@@ -469,25 +469,39 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSports(isActive?: boolean): Promise<Sport[]> {
-    const whereClause = isActive !== undefined ? eq(sports.isActive, isActive) : undefined;
-    
-    // Get sports with student count
-    const sportsWithCount = await db.select({
-      id: sports.id,
-      name: sports.name,
-      description: sports.description,
-      feeStructure: sports.feeStructure,
-      isActive: sports.isActive,
-      createdAt: sports.createdAt,
-      updatedAt: sports.updatedAt,
-      studentsCount: count(students.id)
-    }).from(sports)
-      .leftJoin(students, and(eq(sports.id, students.sportId), eq(students.isActive, true)))
-      .where(whereClause)
-      .groupBy(sports.id, sports.name, sports.description, sports.feeStructure, sports.isActive, sports.createdAt, sports.updatedAt)
-      .orderBy(asc(sports.name));
-    
-    return sportsWithCount;
+    try {
+      // First get all sports with simple query
+      const whereClause = isActive !== undefined ? eq(sports.isActive, isActive) : undefined;
+      const allSports = await db.select().from(sports).where(whereClause).orderBy(asc(sports.name));
+      
+      // If there are no sports, return empty array
+      if (!allSports || allSports.length === 0) {
+        return [];
+      }
+      
+      // Get all students once to count per sport
+      const allStudents = await db.select().from(students).where(eq(students.isActive, true));
+      
+      // Count students per sport
+      const sportStudentCounts = allStudents.reduce((acc, student) => {
+        if (student.sportId) {
+          acc[student.sportId] = (acc[student.sportId] || 0) + 1;
+        }
+        return acc;
+      }, {} as Record<number, number>);
+      
+      // Add student counts to sports
+      const sportsWithCount = allSports.map(sport => ({
+        ...sport,
+        studentsCount: sportStudentCounts[sport.id] || 0
+      }));
+      
+      return sportsWithCount;
+    } catch (error) {
+      console.error('Error in getSports:', error);
+      // Return empty array on error to prevent crashes
+      return [];
+    }
   }
 
   async createSport(sportData: InsertSport): Promise<Sport> {

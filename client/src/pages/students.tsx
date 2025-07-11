@@ -13,7 +13,7 @@ export default function Students() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const { filters, setFilters } = useStudentStore();
 
-  const { data: studentsData, isLoading } = useQuery({
+  const { data: studentsData, isLoading, error: studentsError } = useQuery({
     queryKey: ['/api/students', filters],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -23,25 +23,52 @@ export default function Students() {
       if (filters.isActive !== undefined) params.append('isActive', filters.isActive.toString());
       
       const response = await fetch(`/api/students?${params}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch students');
+      }
       return response.json();
     },
   });
 
-  const { data: sports } = useQuery({
+  const { data: sports, error: sportsError } = useQuery({
     queryKey: ['/api/sports'],
     queryFn: async () => {
       const response = await fetch('/api/sports');
+      if (!response.ok) {
+        throw new Error('Failed to fetch sports');
+      }
       return response.json();
     },
   });
 
-  const { data: batches } = useQuery({
+  const { data: batches, error: batchesError } = useQuery({
     queryKey: ['/api/batches'],
     queryFn: async () => {
       const response = await fetch('/api/batches');
+      if (!response.ok) {
+        throw new Error('Failed to fetch batches');
+      }
       return response.json();
     },
   });
+
+  if (studentsError || sportsError || batchesError) {
+    return (
+      <div className="p-4 sm:p-6 space-y-6">
+        <div className="text-center py-12">
+          <div className="text-red-500 mb-4">
+            <h2 className="text-lg font-semibold">Error Loading Data</h2>
+            <p className="text-sm">
+              {studentsError?.message || sportsError?.message || batchesError?.message}
+            </p>
+          </div>
+          <Button onClick={() => window.location.reload()}>
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 sm:p-6 space-y-6">

@@ -41,6 +41,7 @@ export const sports = pgTable("sports", {
   feeStructure: jsonb("fee_structure").notNull(), // { baseAmount, skillLevels: {beginner: 1000, intermediate: 1500, advanced: 2000} }
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Batches table
