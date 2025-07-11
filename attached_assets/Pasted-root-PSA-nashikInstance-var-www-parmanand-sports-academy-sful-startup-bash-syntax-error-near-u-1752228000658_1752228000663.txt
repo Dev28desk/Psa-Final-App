@@ -1,0 +1,89 @@
+root@PSA-nashikInstance:/var/www/parmanand-sports-academy# sful startup)
+-bash: syntax error near unexpected token `)'
+root@PSA-nashikInstance:/var/www/parmanand-sports-academy# pm2 logs --lines 10
+[TAILING] Tailing last 10 lines for [all] processes (change the value with --lines option)
+/root/.pm2/pm2.log last 10 lines:
+PM2        | 2025-07-11T09:59:40: PM2 log: BUS socket file      : /root/.pm2/pub.sock
+PM2        | 2025-07-11T09:59:40: PM2 log: Application log path : /root/.pm2/logs
+PM2        | 2025-07-11T09:59:40: PM2 log: Worker Interval      : 30000
+PM2        | 2025-07-11T09:59:40: PM2 log: Process dump file    : /root/.pm2/dump.pm2
+PM2        | 2025-07-11T09:59:40: PM2 log: Concurrent actions   : 2
+PM2        | 2025-07-11T09:59:40: PM2 log: SIGTERM timeout      : 1600
+PM2        | 2025-07-11T09:59:40: PM2 log: Runtime Binary       : /usr/bin/node
+PM2        | 2025-07-11T09:59:40: PM2 log: ===============================================================================
+PM2        | 2025-07-11T09:59:40: PM2 log: App [parmanand-sports-academy:0] starting in -fork mode-
+PM2        | 2025-07-11T09:59:40: PM2 log: App [parmanand-sports-academy:0] online
+
+/var/www/parmanand-sports-academy/logs/out-0.log last 10 lines:
+/var/www/parmanand-sports-academy/logs/err-0.log last 10 lines:
+0|parmanan | 2025-07-11T09:57:12:         ^
+0|parmanan | 2025-07-11T09:57:12:
+0|parmanan | 2025-07-11T09:57:12:
+0|parmanan | 2025-07-11T09:57:12: Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|parmanan | 2025-07-11T09:57:12:     at <anonymous> (/var/www/parmanand-sports-academy/server/db.ts:9:9)
+0|parmanan | 2025-07-11T09:57:12:     at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+0|parmanan | 2025-07-11T09:57:12:     at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)
+0|parmanan | 2025-07-11T09:57:12:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+0|parmanan | 2025-07-11T09:57:12:
+0|parmanan | 2025-07-11T09:57:12: Node.js v20.19.3
+
+0|parmanand-sports-academy  | 2025-07-11T09:59:42: /var/www/parmanand-sports-academy/server/db.ts:9
+0|parmanand-sports-academy  | 2025-07-11T09:59:42:   throw new Error(
+0|parmanand-sports-academy  | 2025-07-11T09:59:42:         ^
+0|parmanand-sports-academy  | 2025-07-11T09:59:42:
+0|parmanand-sports-academy  | 2025-07-11T09:59:42:
+0|parmanand-sports-academy  | 2025-07-11T09:59:42: Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|parmanand-sports-academy  | 2025-07-11T09:59:42:     at <anonymous> (/var/www/parmanand-sports-academy/server/db.ts:9:9)
+0|parmanand-sports-academy  | 2025-07-11T09:59:42:     at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+0|parmanand-sports-academy  | 2025-07-11T09:59:42:     at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)
+0|parmanand-sports-academy  | 2025-07-11T09:59:42:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+0|parmanand-sports-academy  | 2025-07-11T09:59:42:
+0|parmanand-sports-academy  | 2025-07-11T09:59:42: Node.js v20.19.3
+PM2                         | App [parmanand-sports-academy:0] exited with code [1] via signal [SIGINT]
+PM2                         | App [parmanand-sports-academy:0] starting in -fork mode-
+PM2                         | App [parmanand-sports-academy:0] online
+0|parmanand-sports-academy  | 2025-07-11T09:59:43: /var/www/parmanand-sports-academy/server/db.ts:9
+0|parmanand-sports-academy  | 2025-07-11T09:59:43:   throw new Error(
+0|parmanand-sports-academy  | 2025-07-11T09:59:43:         ^
+0|parmanand-sports-academy  | 2025-07-11T09:59:43:
+0|parmanand-sports-academy  | 2025-07-11T09:59:43:
+0|parmanand-sports-academy  | 2025-07-11T09:59:43: Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|parmanand-sports-academy  | 2025-07-11T09:59:43:     at <anonymous> (/var/www/parmanand-sports-academy/server/db.ts:9:9)
+0|parmanand-sports-academy  | 2025-07-11T09:59:43:     at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+0|parmanand-sports-academy  | 2025-07-11T09:59:43:     at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)
+0|parmanand-sports-academy  | 2025-07-11T09:59:43:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+0|parmanand-sports-academy  | 2025-07-11T09:59:43:
+0|parmanand-sports-academy  | 2025-07-11T09:59:43: Node.js v20.19.3
+PM2                         | App [parmanand-sports-academy:0] exited with code [1] via signal [SIGINT]
+PM2                         | App [parmanand-sports-academy:0] starting in -fork mode-
+PM2                         | App [parmanand-sports-academy:0] online
+0|parmanand-sports-academy  | 2025-07-11T09:59:45: /var/www/parmanand-sports-academy/server/db.ts:9
+0|parmanand-sports-academy  | 2025-07-11T09:59:45:   throw new Error(
+0|parmanand-sports-academy  | 2025-07-11T09:59:45:         ^
+0|parmanand-sports-academy  | 2025-07-11T09:59:45:
+0|parmanand-sports-academy  | 2025-07-11T09:59:45:
+0|parmanand-sports-academy  | 2025-07-11T09:59:45: Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|parmanand-sports-academy  | 2025-07-11T09:59:45:     at <anonymous> (/var/www/parmanand-sports-academy/server/db.ts:9:9)
+0|parmanand-sports-academy  | 2025-07-11T09:59:45:     at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+0|parmanand-sports-academy  | 2025-07-11T09:59:45:     at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)
+0|parmanand-sports-academy  | 2025-07-11T09:59:45:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+0|parmanand-sports-academy  | 2025-07-11T09:59:45:
+0|parmanand-sports-academy  | 2025-07-11T09:59:45: Node.js v20.19.3
+PM2                         | App [parmanand-sports-academy:0] exited with code [1] via signal [SIGINT]
+PM2                         | App [parmanand-sports-academy:0] starting in -fork mode-
+PM2                         | App [parmanand-sports-academy:0] online
+0|parmanand-sports-academy  | 2025-07-11T09:59:46: /var/www/parmanand-sports-academy/server/db.ts:9
+0|parmanand-sports-academy  | 2025-07-11T09:59:46:   throw new Error(
+0|parmanand-sports-academy  | 2025-07-11T09:59:46:         ^
+0|parmanand-sports-academy  | 2025-07-11T09:59:46:
+0|parmanand-sports-academy  | 2025-07-11T09:59:46:
+0|parmanand-sports-academy  | 2025-07-11T09:59:46: Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|parmanand-sports-academy  | 2025-07-11T09:59:46:     at <anonymous> (/var/www/parmanand-sports-academy/server/db.ts:9:9)
+0|parmanand-sports-academy  | 2025-07-11T09:59:46:     at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+0|parmanand-sports-academy  | 2025-07-11T09:59:46:     at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)
+0|parmanand-sports-academy  | 2025-07-11T09:59:46:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+0|parmanand-sports-academy  | 2025-07-11T09:59:46:
+0|parmanand-sports-academy  | 2025-07-11T09:59:46: Node.js v20.19.3
+PM2                         | App [parmanand-sports-academy:0] exited with code [1] via signal [SIGINT]
+PM2                         | App [parmanand-sports-academy:0] starting in -fork mode-
+PM2                         | App [parmanand-sports-academy:0] online
