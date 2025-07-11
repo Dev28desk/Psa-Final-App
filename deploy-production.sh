@@ -118,7 +118,7 @@ print_success "Database schema created"
 
 # 9. Create PM2 ecosystem file
 print_status "Creating PM2 configuration..."
-cat > ecosystem.config.js << 'EOF'
+cat > ecosystem.config.cjs << 'EOF'
 module.exports = {
   apps: [{
     name: 'parmanand-sports-academy',
@@ -209,7 +209,7 @@ print_success "Nginx configured"
 
 # 11. Start application
 print_status "Starting application..."
-pm2 start ecosystem.config.js --env production
+pm2 start ecosystem.config.cjs --env production
 pm2 save
 pm2 startup
 print_success "Application started"
